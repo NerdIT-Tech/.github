@@ -21,7 +21,7 @@ untrusted PR branches.
 steps:
   - uses: actions/checkout@v7
 
-  - uses: NerdIT-Tech/.github/.github/actions/terraform-lint-scan@v1
+  - uses: NerdIT-Tech/.github/.github/actions/terraform-lint-scan@terraform-lint-scan/v1
     with:
       terraform-version: "1.9.0"
 ```
