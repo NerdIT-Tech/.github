@@ -5,6 +5,7 @@
   "bump-patch-for-minor-pre-major": true,
   "separate-pull-requests": true,
   "include-component-in-tag": true,
+  "tag-separator": "/",
   "pull-request-title-pattern": "chore: release ${component} ${version}",
   "changelog-sections": [
     { "type": "feat", "section": "Features" },

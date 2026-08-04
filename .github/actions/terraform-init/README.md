@@ -13,7 +13,7 @@ needs no backend or credentials at all.
 steps:
   - uses: actions/checkout@v7
 
-  - uses: NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init-v1
+  - uses: NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init/v1
     with:
       terraform-version: "1.9.0"
       no-backend: "true"
