@@ -12,18 +12,20 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
 
   move-major-tag:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.paths_released != '[]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        path: ${{ fromJson(needs.release-please.outputs.paths_released) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,10 +33,13 @@ jobs:
 
       - name: Move floating major version tag
         env:
-          TAG: ${{ needs.release-please.outputs.tag_name }}
+          TAG: ${{ needs.release-please.outputs[format('{0}--tag_name', matrix.path)] }}
         run: |
-          MAJOR="${TAG%%.*}"
+          VERSION="${TAG##*-v}"
+          COMPONENT="${TAG%-v${VERSION}}"
+          MAJOR="${VERSION%%.*}"
+          FLOAT_TAG="${COMPONENT}-v${MAJOR}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -f "$MAJOR" "$TAG"
-          git push origin "$MAJOR" --force
+          git tag -f "$FLOAT_TAG" "$TAG"
+          git push origin "$FLOAT_TAG" --force

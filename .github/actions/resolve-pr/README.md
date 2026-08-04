@@ -13,7 +13,7 @@ steps:
 
   - name: Resolve merged PR
     id: resolve-pr
-    uses: NerdIT-Tech/.github/.github/actions/resolve-pr@v1
+    uses: NerdIT-Tech/.github/.github/actions/resolve-pr@resolve-pr-v1
 
   - name: Use the PR number
     if: steps.resolve-pr.outputs.pr-number != ''
