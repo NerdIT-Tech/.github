@@ -1,0 +1,62 @@
+name: Terraform lint & scan
+description: >-
+  Backend-less static analysis bundle for a Terraform root: fmt check,
+  validate, tflint, and a Trivy IaC scan. Composes the fmt/init/validate/
+  tflint/trivy-scan actions in this same directory rather than duplicating
+  their steps -- pull in just one of those instead of this whole bundle if
+  a project only wants (say) tflint. No AWS credentials or state access
+  required, so this is safe to run on untrusted PR branches. Requires the
+  calling job to have already run actions/checkout -- like any local
+  action, this one has to be resolvable on disk before it can run, so it
+  can't check out the repo itself as its first step.
+
+inputs:
+  terraform-version:
+    description: Terraform version to install (hashicorp/setup-terraform).
+    required: true
+  tflint-version:
+    description: tflint version to install, or "latest".
+    required: false
+    default: latest
+  trivy-severity:
+    description: Comma-separated severities that fail the Trivy scan.
+    required: false
+    default: "CRITICAL,HIGH"
+  trivy-version:
+    description: aquasecurity/trivy-action version.
+    required: false
+    default: v0.72.0
+  working-directory:
+    description: Terraform root to lint/scan.
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/terraform-fmt
+      with:
+        terraform-version: ${{ inputs.terraform-version }}
+        working-directory: ${{ inputs.working-directory }}
+
+    - uses: ./.github/actions/terraform-init
+      with:
+        terraform-version: ${{ inputs.terraform-version }}
+        no-backend: "true"
+        working-directory: ${{ inputs.working-directory }}
+
+    - uses: ./.github/actions/terraform-validate
+      with:
+        terraform-version: ${{ inputs.terraform-version }}
+        working-directory: ${{ inputs.working-directory }}
+
+    - uses: ./.github/actions/tflint
+      with:
+        tflint-version: ${{ inputs.tflint-version }}
+        working-directory: ${{ inputs.working-directory }}
+
+    - uses: ./.github/actions/trivy-scan
+      with:
+        severity: ${{ inputs.trivy-severity }}
+        version: ${{ inputs.trivy-version }}
+        working-directory: ${{ inputs.working-directory }}
