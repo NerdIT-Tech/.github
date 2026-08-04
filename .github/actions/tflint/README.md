@@ -10,7 +10,7 @@ independent of the fmt/init/validate chain.
 steps:
   - uses: actions/checkout@v7
 
-  - uses: NerdIT-Tech/.github/.github/actions/tflint@v1
+  - uses: NerdIT-Tech/.github/.github/actions/tflint@tflint/v1
 ```
 
 `actions/checkout` must run before this action -- like any local action, it
