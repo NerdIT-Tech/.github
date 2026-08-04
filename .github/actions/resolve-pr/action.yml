@@ -1,0 +1,44 @@
+name: Resolve merged PR for commit
+description: >-
+  Finds the pull request that was merged via a commit -- i.e. the commit is
+  a merge commit created by merging that PR, not a direct push. Used so a
+  push-triggered workflow run can tell whether it corresponds to a PR merge
+  and, if so, reuse that PR's artifacts (see ADR-0004) instead of redoing
+  work from scratch. Requires the calling job to have already run
+  actions/checkout -- like any local action, this one has to be resolvable
+  on disk before it can run.
+
+inputs:
+  commit-sha:
+    description: Commit SHA to resolve the merged PR for.
+    required: false
+    default: ${{ github.sha }}
+
+outputs:
+  pr-number:
+    description: Number of the PR merged via this commit, or empty if none matched.
+    value: ${{ steps.find.outputs.pr-number }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v7
+
+    - name: Find merged PR for this commit
+      id: find
+      uses: actions/github-script@v9
+      env:
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+      with:
+        script: |
+          const commit_sha = process.env.COMMIT_SHA;
+          const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha,
+          });
+          const match = prs.find((pr) => pr.merged_at && pr.merge_commit_sha === commit_sha);
+          core.setOutput("pr-number", match ? String(match.number) : "");
+          core.info(match
+            ? `Commit ${commit_sha} matches merged PR #${match.number}`
+            : `No merged PR matched commit ${commit_sha}`);
