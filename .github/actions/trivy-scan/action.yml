@@ -1,0 +1,40 @@
+name: Trivy IaC scan
+description: >-
+  Runs a Trivy config/IaC scan. Fully independent of the Terraform
+  toolchain -- Trivy reads the .tf files directly, no init or provider
+  resolution needed. Requires the calling job to have already run
+  actions/checkout.
+
+inputs:
+  severity:
+    description: Comma-separated severities that fail the scan.
+    required: false
+    default: "CRITICAL,HIGH"
+  fail-on-findings:
+    description: Exit non-zero when matching findings are found (exit-code 1 vs 0).
+    required: false
+    default: "true"
+  version:
+    description: >-
+      aquasecurity/trivy-action version. Pinned above the action's own
+      default because earlier releases don't recognize that
+      github_repository_vulnerability_alerts satisfies GIT-0003 for a
+      linked github_repository.
+    required: false
+    default: v0.72.0
+  working-directory:
+    description: Path to scan.
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - name: Trivy IaC scan
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: config
+        scan-ref: ${{ inputs.working-directory }}
+        exit-code: ${{ inputs.fail-on-findings == 'true' && '1' || '0' }}
+        severity: ${{ inputs.severity }}
+        version: ${{ inputs.version }}
