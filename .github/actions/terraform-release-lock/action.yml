@@ -1,0 +1,29 @@
+name: Release Terraform S3 native lock
+description: >-
+  Best-effort removal of the S3 native-locking lock object. Used on every
+  path that takes the lock (a `terraform plan` or `terraform apply` run
+  against the S3 backend) so a killed or cancelled step doesn't leave the
+  `.tflock` object behind and block every later plan/apply. Safe to run
+  even when nothing is locked -- the `|| true` makes a missing lock object
+  a no-op rather than a failure.
+
+inputs:
+  state-bucket:
+    description: S3 bucket holding the Terraform state object.
+    required: true
+  aws-region:
+    description: AWS region of the state bucket.
+    required: true
+  state-key:
+    description: Key of the state object within the bucket (the lock object is this key plus `.tflock`).
+    required: false
+    default: terraform.tfstate
+
+runs:
+  using: composite
+  steps:
+    - name: Release state lock
+      shell: bash
+      run: |
+        aws s3 rm "s3://${{ inputs.state-bucket }}/${{ inputs.state-key }}.tflock" \
+          --region "${{ inputs.aws-region }}" || true
