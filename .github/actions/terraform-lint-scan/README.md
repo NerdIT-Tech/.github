@@ -4,11 +4,13 @@ Backend-less static analysis bundle for a Terraform root: fmt check,
 validate, tflint, and a Trivy IaC scan. Composes the
 [terraform-fmt](../terraform-fmt/README.md),
 [terraform-init](../terraform-init/README.md),
-[terraform-validate](../terraform-validate/README.md),
-[tflint](../tflint/README.md), and
-[trivy-scan](../trivy-scan/README.md) actions in this same directory rather
-than duplicating their steps. Pull in just one of those instead of this
-whole bundle if a project only wants (say) tflint.
+[terraform-validate](../terraform-validate/README.md), and
+[tflint](../tflint/README.md) actions in this same directory rather than
+duplicating their steps. Pull in just one of those instead of this whole
+bundle if a project only wants (say) tflint. The Trivy step calls
+[aquasecurity/trivy-action](https://github.com/aquasecurity/trivy-action)
+directly rather than through a local wrapper, since a wrapper wasn't
+adding anything over the upstream action.
 
 No AWS credentials or state access required, so this is safe to run on
 untrusted PR branches.
@@ -27,8 +29,8 @@ steps:
 `actions/checkout` must run before this action -- like any local action, it
 has to be resolvable on disk before it can run, so it can't check out the
 repo itself as its first step. It also references the fmt/init/validate/
-tflint/trivy-scan actions by relative path, so all of them need to live at
-the same ref of this repo.
+tflint actions by relative path, so all of them need to live at the same
+ref of this repo.
 
 ## Inputs
 

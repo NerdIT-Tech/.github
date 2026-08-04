@@ -2,13 +2,16 @@ name: Terraform lint & scan
 description: >-
   Backend-less static analysis bundle for a Terraform root: fmt check,
   validate, tflint, and a Trivy IaC scan. Composes the fmt/init/validate/
-  tflint/trivy-scan actions in this same directory rather than duplicating
-  their steps -- pull in just one of those instead of this whole bundle if
-  a project only wants (say) tflint. No AWS credentials or state access
-  required, so this is safe to run on untrusted PR branches. Requires the
-  calling job to have already run actions/checkout -- like any local
-  action, this one has to be resolvable on disk before it can run, so it
-  can't check out the repo itself as its first step.
+  tflint actions in this same directory rather than duplicating their
+  steps -- pull in just one of those instead of this whole bundle if a
+  project only wants (say) tflint. The Trivy step calls
+  aquasecurity/trivy-action directly rather than through a local wrapper,
+  since it wasn't adding anything over the upstream action. No AWS
+  credentials or state access required, so this is safe to run on
+  untrusted PR branches. Requires the calling job to have already run
+  actions/checkout -- like any local action, this one has to be
+  resolvable on disk before it can run, so it can't check out the repo
+  itself as its first step.
 
 inputs:
   terraform-version:
@@ -55,8 +58,11 @@ runs:
         tflint-version: ${{ inputs.tflint-version }}
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/trivy-scan
+    - name: Trivy IaC scan
+      uses: aquasecurity/trivy-action@v0.36.0
       with:
+        scan-type: config
+        scan-ref: ${{ inputs.working-directory }}
+        exit-code: "1"
         severity: ${{ inputs.trivy-severity }}
         version: ${{ inputs.trivy-version }}
-        working-directory: ${{ inputs.working-directory }}
