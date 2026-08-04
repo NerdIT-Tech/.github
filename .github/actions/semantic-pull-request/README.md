@@ -18,7 +18,7 @@ jobs:
   lint-pr-title:
     runs-on: ubuntu-latest
     steps:
-      - uses: NerdIT-Tech/.github/.github/actions/semantic-pull-request@semantic-pull-request-v1
+      - uses: NerdIT-Tech/.github/.github/actions/semantic-pull-request@semantic-pull-request/v1
 ```
 
 `permissions: pull-requests: write` is required so the action can post/delete
