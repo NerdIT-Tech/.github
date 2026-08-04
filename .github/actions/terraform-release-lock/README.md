@@ -21,7 +21,7 @@ steps:
 
   - name: Release Terraform lock
     if: always()
-    uses: NerdIT-Tech/.github/.github/actions/terraform-release-lock@v1
+    uses: NerdIT-Tech/.github/.github/actions/terraform-release-lock@terraform-release-lock/v1
     with:
       state-bucket: my-terraform-state
       aws-region: us-east-1
