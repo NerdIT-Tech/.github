@@ -35,10 +35,10 @@ jobs:
         env:
           TAG: ${{ needs.release-please.outputs[format('{0}--tag_name', matrix.path)] }}
         run: |
-          VERSION="${TAG##*-v}"
-          COMPONENT="${TAG%-v${VERSION}}"
+          VERSION="${TAG##*/v}"
+          COMPONENT="${TAG%/v${VERSION}}"
           MAJOR="${VERSION%%.*}"
-          FLOAT_TAG="${COMPONENT}-v${MAJOR}"
+          FLOAT_TAG="${COMPONENT}/v${MAJOR}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f "$FLOAT_TAG" "$TAG"
