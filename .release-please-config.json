@@ -3,7 +3,9 @@
   "release-type": "simple",
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
-  "pull-request-title-pattern": "chore: release ${version}",
+  "separate-pull-requests": true,
+  "include-component-in-tag": true,
+  "pull-request-title-pattern": "chore: release ${component} ${version}",
   "changelog-sections": [
     { "type": "feat", "section": "Features" },
     { "type": "fix", "section": "Bug Fixes" },
@@ -17,6 +19,15 @@
     { "type": "ci", "section": "Miscellaneous", "hidden": true }
   ],
   "packages": {
-    ".": {}
+    ".github/actions/resolve-pr": { "component": "resolve-pr" },
+    ".github/actions/semantic-pull-request": { "component": "semantic-pull-request" },
+    ".github/actions/terraform-fmt": { "component": "terraform-fmt" },
+    ".github/actions/terraform-init": { "component": "terraform-init" },
+    ".github/actions/terraform-init-s3": { "component": "terraform-init-s3" },
+    ".github/actions/terraform-lint-scan": { "component": "terraform-lint-scan" },
+    ".github/actions/terraform-plan": { "component": "terraform-plan" },
+    ".github/actions/terraform-release-lock": { "component": "terraform-release-lock" },
+    ".github/actions/terraform-validate": { "component": "terraform-validate" },
+    ".github/actions/tflint": { "component": "tflint" }
   }
 }
