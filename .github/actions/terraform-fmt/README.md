@@ -10,7 +10,7 @@ order-independent -- unlike `terraform validate`, `fmt` doesn't need
 steps:
   - uses: actions/checkout@v7
 
-  - uses: NerdIT-Tech/.github/.github/actions/terraform-fmt@v1
+  - uses: NerdIT-Tech/.github/.github/actions/terraform-fmt@terraform-fmt-v1
     with:
       terraform-version: "1.9.0"
 ```
