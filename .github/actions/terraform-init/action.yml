@@ -1,0 +1,40 @@
+name: Terraform init
+description: >-
+  Installs Terraform and runs `terraform init`. Purely a Terraform-CLI
+  wrapper -- no AWS awareness. Callers that need the S3 backend must
+  configure credentials themselves first (see the aws-credentials action)
+  and pass the -backend-config= flags through `args`; no-backend: true
+  runs `terraform init -backend=false` instead, for the local-validation
+  case that needs no backend or credentials at all. Requires the calling
+  job to have already run actions/checkout -- like any local action, this
+  one has to be resolvable on disk before it can run, so it can't check
+  out the repo itself as its first step.
+
+inputs:
+  terraform-version:
+    description: Terraform version to install (hashicorp/setup-terraform).
+    required: true
+  no-backend:
+    description: Run `terraform init -backend=false` instead of using args for backend config.
+    required: false
+    default: "false"
+  args:
+    description: Additional arguments to pass to `terraform init` (e.g. -backend-config= flags).
+    required: false
+    default: ""
+  working-directory:
+    description: Terraform root to initialize.
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - uses: hashicorp/setup-terraform@v4
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+
+    - name: terraform init
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform init ${{ inputs.no-backend == 'true' && '-backend=false' || '' }} ${{ inputs.args }}
