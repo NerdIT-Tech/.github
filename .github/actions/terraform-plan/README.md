@@ -12,14 +12,14 @@ permissions:
 steps:
   - uses: actions/checkout@v7
 
-  - uses: NerdIT-Tech/.github/.github/actions/terraform-init-s3@v1
+  - uses: NerdIT-Tech/.github/.github/actions/terraform-init-s3@terraform-init-s3/v1
     with:
       terraform-version: "1.9.0"
       role-to-assume: arn:aws:iam::123456789012:role/terraform-ci
       aws-region: us-east-1
       state-bucket: my-terraform-state
 
-  - uses: NerdIT-Tech/.github/.github/actions/terraform-plan@v1
+  - uses: NerdIT-Tech/.github/.github/actions/terraform-plan@terraform-plan/v1
     timeout-minutes: 15
 ```
 
