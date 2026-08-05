@@ -5,24 +5,39 @@ on:
     inputs:
       types:
         description: "The allowed commit types"
-        required: true
+        required: false
         type: string
+        default: |
+          feat
+          fix
+          docs
+          style
+          refactor
+          perf
+          test
+          chore
+          build
+          ci
       requireScope:
         description: "Whether a scope is required"
-        required: true
+        required: false
         type: boolean
+        default: true
       scopes:
         description: "The allowed commit scopes"
-        required: true
+        required: false
         type: string
+        default: ""
       subjectPattern:
         description: "The regex pattern for the subject"
-        required: true
+        required: false
         type: string
+        default: "^#[0-9]+.*$"
       exampleCommitTitle:
         description: "An example of a valid commit title"
-        required: true
+        required: false
         type: string
+        default: "feat(ci): #1234 add new feature"
 
 permissions:
   pull-requests: write

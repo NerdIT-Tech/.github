@@ -1,8 +1,8 @@
-name: Semantic PR Title
+name: PR Checks
 
 on:
   pull_request_target:
-    types: 
+    types:
       - opened
       - edited
       - reopened
@@ -15,8 +15,12 @@ jobs:
       pull-requests: write
       statuses: write
   lint-yaml:
-    - uses: actions/checkout@v3
-    - name: YAML Lint
-      uses: ibiqlik/action-yamllint@v3.1.1
-      with:
-        config_file: .github/.yamllint.yml
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: YAML Lint
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
+        with:
+          config_file: .github/.yamllint.yml
