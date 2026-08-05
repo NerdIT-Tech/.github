@@ -4,6 +4,11 @@ Fails if any `.tf` file isn't canonically formatted. Standalone and
 order-independent -- unlike `terraform validate`, `fmt` doesn't need
 `terraform init` first.
 
+When `check` is `true` and the check fails, each unformatted hunk is also
+posted as a GitHub annotation (`::error file=,line=,title=::`), so it shows
+up inline on the PR's "Files changed" tab -- the same way `yaml-lint` and
+`actionlint` do in this repo.
+
 ## Getting started
 
 ```yaml

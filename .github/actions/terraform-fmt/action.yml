@@ -2,7 +2,11 @@ name: Terraform fmt check
 description: >-
   Fails if any .tf file isn't canonically formatted. Standalone and
   order-independent -- unlike validate, fmt doesn't need `terraform init`
-  first. Requires the calling job to have already run actions/checkout.
+  first. When check is true and the check fails, also posts a GitHub
+  annotation (::error file=,line=,title=::) at each unformatted hunk so the
+  issue shows up inline on the PR's Files changed tab, the same way
+  actionlint and yaml-lint do. Requires the calling job to have already run
+  actions/checkout.
 
 inputs:
   terraform-version:
@@ -33,6 +37,7 @@ runs:
         terraform_version: ${{ inputs.terraform-version }}
 
     - name: terraform fmt
+      id: fmt
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -40,3 +45,27 @@ runs:
           ${{ inputs.check == 'true' && '-check' || '' }} \
           ${{ inputs.recursive == 'true' && '-recursive' || '' }} \
           ${{ inputs.diff == 'true' && '-diff' || '' }}
+
+    - name: Annotate unformatted files
+      if: failure() && inputs.check == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        wd="${{ inputs.working-directory }}"
+        wd="${wd%/}"
+        if [ "$wd" = "." ]; then prefix=""; else prefix="${wd#./}/"; fi
+
+        file=""
+        while IFS= read -r diffline; do
+          case "$diffline" in
+            "--- "*|"+++ "*) ;;
+            "@@"*)
+              if [[ "$diffline" =~ \+([0-9]+) ]]; then
+                echo "::error file=${prefix}${file},line=${BASH_REMATCH[1]},title=terraform fmt::This file is not formatted correctly. Run \`terraform fmt\` to fix."
+              fi
+              ;;
+            " "*|"-"*|"+"*) ;;
+            "") ;;
+            *) file="$diffline" ;;
+          esac
+        done < <(terraform fmt -check ${{ inputs.recursive == 'true' && '-recursive' || '' }} -diff -no-color)

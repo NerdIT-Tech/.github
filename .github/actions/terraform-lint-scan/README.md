@@ -15,6 +15,11 @@ adding anything over the upstream action.
 No AWS credentials or state access required, so this is safe to run on
 untrusted PR branches.
 
+Every check in the bundle -- fmt, validate, tflint, and Trivy -- posts its
+findings as GitHub annotations (`::error`/`::warning file=,line=,col=::`)
+on failure, so issues show up inline on the PR's "Files changed" tab, the
+same way `yaml-lint` and `actionlint` do in this repo.
+
 ## Getting started
 
 ```yaml

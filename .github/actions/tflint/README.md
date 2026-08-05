@@ -4,6 +4,12 @@ Runs tflint's own plugin init followed by a recursive lint pass. Doesn't
 need Terraform installed at all -- tflint is a standalone binary, fully
 independent of the fmt/init/validate chain.
 
+On failure, each issue is also posted as a GitHub annotation
+(`::error`/`::warning file=,line=,col=::`), so it shows up inline on the
+PR's "Files changed" tab -- the same way `yaml-lint` and `actionlint` do in
+this repo. Severity follows each rule's configured severity (`error` maps
+to `::error`, everything else to `::warning`).
+
 ## Getting started
 
 ```yaml

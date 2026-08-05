@@ -1,10 +1,13 @@
 name: Terraform validate
 description: >-
-  Runs `terraform validate` against the current working directory.
-  Precondition: some prior step in this job must have already run
-  `terraform init` (e.g. the terraform-init-no-backend action) -- validate
-  reads the `.terraform/` directory that init populates and doesn't create
-  it itself. Requires the calling job to have already run actions/checkout.
+  Runs `terraform validate` against the current working directory. On
+  failure, also posts each diagnostic as a GitHub annotation
+  (::error/::warning file=,line=,col=::) so it shows up inline on the PR's
+  Files changed tab, the same way actionlint and yaml-lint do. Precondition:
+  some prior step in this job must have already run `terraform init` (e.g.
+  the terraform-init-no-backend action) -- validate reads the `.terraform/`
+  directory that init populates and doesn't create it itself. Requires the
+  calling job to have already run actions/checkout.
 
 inputs:
   terraform-version:
@@ -23,6 +26,25 @@ runs:
         terraform_version: ${{ inputs.terraform-version }}
 
     - name: terraform validate
+      id: validate
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: terraform validate
+      run: terraform validate -no-color -json > validate-result.json
+
+    - name: Annotate validation diagnostics
+      if: failure()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        jq -r '
+          def esc: gsub("%";"%25") | gsub("\r";"%0D") | gsub("\n";"%0A");
+          def escprop: esc | gsub(",";"%2C") | gsub(":";"%3A");
+          .diagnostics[]? |
+          (if .severity == "warning" then "warning" else "error" end) as $level |
+          ((.summary // "") + (if (.detail // "") != "" then ": " + .detail else "" end) | esc) as $msg |
+          if (.range.filename // "") != "" then
+            "::" + $level + " file=" + (.range.filename|escprop) + ",line=" + (.range.start.line|tostring) + ",col=" + (.range.start.column|tostring) + ",title=terraform validate::" + $msg
+          else
+            "::" + $level + " title=terraform validate::" + $msg
+          end
+        ' validate-result.json
