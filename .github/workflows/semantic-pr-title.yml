@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   lint-pr-title:
+    if: github.actor != 'dependabot[bot]'
     uses: ./.github/workflows/reusable-semantic-pr-title.yml
     permissions:
       contents: read
