@@ -2,8 +2,11 @@ name: tflint
 description: >-
   Runs tflint's own plugin init followed by a recursive lint pass. Doesn't
   need Terraform installed at all -- tflint is a standalone binary, fully
-  independent of the fmt/init/validate chain. Requires the calling job to
-  have already run actions/checkout.
+  independent of the fmt/init/validate chain. On failure, also posts each
+  issue as a GitHub annotation (::error/::warning file=,line=,col=::) so it
+  shows up inline on the PR's Files changed tab, the same way actionlint and
+  yaml-lint do. Requires the calling job to have already run
+  actions/checkout.
 
 inputs:
   tflint-version:
@@ -32,6 +35,34 @@ runs:
       run: tflint --init
 
     - name: tflint
+      id: tflint
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: tflint ${{ inputs.recursive == 'true' && '--recursive' || '' }}
+      run: |
+        tflint \
+          ${{ inputs.recursive == 'true' && '--recursive' || '' }} \
+          --format=json > tflint-result.json
+
+    - name: Annotate tflint issues
+      if: failure()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        jq -r '
+          def esc: gsub("%";"%25") | gsub("\r";"%0D") | gsub("\n";"%0A");
+          def escprop: esc | gsub(",";"%2C") | gsub(":";"%3A");
+          (.issues // [])[] |
+          (if .rule.severity == "error" then "error" else "warning" end) as $level |
+          (.message // "" | esc) as $msg |
+          (.rule.name // "tflint") as $rule |
+          if (.range.filename // "") != "" then
+            "::" + $level + " file=" + (.range.filename|escprop) + ",line=" + (.range.start.line|tostring) + ",col=" + (.range.start.column|tostring) + ",title=tflint(" + $rule + ")::" + $msg
+          else
+            "::" + $level + " title=tflint(" + $rule + ")::" + $msg
+          end
+        ' tflint-result.json
+        jq -r '
+          def esc: gsub("%";"%25") | gsub("\r";"%0D") | gsub("\n";"%0A");
+          (.errors // [])[] |
+          "::error title=tflint::" + ((.message // "internal error") | esc)
+        ' tflint-result.json

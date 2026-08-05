@@ -2,6 +2,11 @@
 
 Runs `terraform validate` against the current working directory.
 
+On failure, each diagnostic is also posted as a GitHub annotation
+(`::error`/`::warning file=,line=,col=::`), so it shows up inline on the
+PR's "Files changed" tab -- the same way `yaml-lint` and `actionlint` do in
+this repo.
+
 ## Getting started
 
 ```yaml

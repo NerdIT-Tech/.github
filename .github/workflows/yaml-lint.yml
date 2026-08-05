@@ -20,4 +20,4 @@ jobs:
     permissions:
       contents: read
     with:
-      config_file: .github/.yamllint.yml
+      config_file: .yamllint.yml
