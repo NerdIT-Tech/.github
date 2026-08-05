@@ -29,13 +29,13 @@ jobs:
 
       - name: Get changed YAML files
         id: changed-files
-        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96  # v47.0.6
         with:
           files: ${{ inputs.files }}
 
       - name: YAML Lint
         if: steps.changed-files.outputs.any_changed == 'true'
-        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c  # v3.1.1
         with:
           file_or_dir: ${{ steps.changed-files.outputs.all_changed_files }}
           config_file: ${{ inputs.config_file }}
