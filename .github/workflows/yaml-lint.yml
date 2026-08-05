@@ -1,21 +1,23 @@
-name: PR Checks
+name: YAML Lint
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
-      - edited
       - reopened
       - synchronize
+    paths:
+      - "**.yml"
+      - "**.yaml"
+
+concurrency:
+  group: yaml-lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  lint-pr-title:
-    uses: ./.github/workflows/reusable-semantic-pr-title.yaml
-    permissions:
-      pull-requests: write
-      statuses: write
   lint-yaml:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:

@@ -47,6 +47,7 @@ jobs:
   lint-pr-title:
     name: Lint PR title
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
 
