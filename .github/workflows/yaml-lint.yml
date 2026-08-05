@@ -1,0 +1,23 @@
+name: YAML Lint
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - "**.yml"
+      - "**.yaml"
+
+concurrency:
+  group: yaml-lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint-yaml:
+    uses: ./.github/workflows/reusable-yaml-lint.yml
+    permissions:
+      contents: read
+    with:
+      config_file: .github/.yamllint.yml

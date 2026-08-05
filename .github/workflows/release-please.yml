@@ -36,7 +36,7 @@ jobs:
           TAG: ${{ needs.release-please.outputs[format('{0}--tag_name', matrix.path)] }}
         run: |
           VERSION="${TAG##*/v}"
-          COMPONENT="${TAG%/v${VERSION}}"
+          COMPONENT="${TAG%/v"${VERSION}"}"
           MAJOR="${VERSION%%.*}"
           FLOAT_TAG="${COMPONENT}/v${MAJOR}"
           git config user.name "github-actions[bot]"
