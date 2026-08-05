@@ -1,0 +1,42 @@
+name: Terraform fmt check
+description: >-
+  Fails if any .tf file isn't canonically formatted. Standalone and
+  order-independent -- unlike validate, fmt doesn't need `terraform init`
+  first. Requires the calling job to have already run actions/checkout.
+
+inputs:
+  terraform-version:
+    description: Terraform version to install (hashicorp/setup-terraform).
+    required: true
+  check:
+    description: Fail instead of writing changes back to disk (-check).
+    required: false
+    default: "true"
+  recursive:
+    description: Process subdirectories too (-recursive).
+    required: false
+    default: "true"
+  diff:
+    description: Print a diff of changes needed (-diff).
+    required: false
+    default: "true"
+  working-directory:
+    description: Terraform root to check.
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - uses: hashicorp/setup-terraform@v4
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+
+    - name: terraform fmt
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        terraform fmt \
+          ${{ inputs.check == 'true' && '-check' || '' }} \
+          ${{ inputs.recursive == 'true' && '-recursive' || '' }} \
+          ${{ inputs.diff == 'true' && '-diff' || '' }}
