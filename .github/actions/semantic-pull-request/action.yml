@@ -4,7 +4,6 @@ description: >-
 
 inputs:
   types:
-    type: string
     description: >-
       list of allowed commit types.
     required: false
@@ -20,19 +19,16 @@ inputs:
       build
       ci
   requireScope:
-    type: boolean
     description: >-
       Require scopes in PR titles.
     required: false
     default: true
   scopes:
-    type: string
     description: >-
       list of allowed scopes. If empty, any scope is allowed.
     required: false
     default: ""
   subjectPattern:
-    type: string
     description: >-
       regex pattern to match the subject of the PR title. If empty, any subject is allowed.
     required: false
@@ -42,11 +38,9 @@ inputs:
       Don't post the PR title lint output as a comment on the PR. This is useful if
       you want to post the output somewhere else (e.g. a Slack channel)
       instead of as a PR comment.
-    type: boolean
     required: false
     default: "false"
   exampleCommitTitle:
-    type: string
     description: >-
       Example of a valid PR title.
     required: false
