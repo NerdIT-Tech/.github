@@ -1,0 +1,44 @@
+name: Semantic PR Title
+
+on:
+  workflow_call:
+    inputs:
+      types:
+        description: "The allowed commit types"
+        required: true
+        type: string
+      requireScope:
+        description: "Whether a scope is required"
+        required: true
+        type: boolean
+      scopes:
+        description: "The allowed commit scopes"
+        required: true
+        type: string
+      subjectPattern:
+        description: "The regex pattern for the subject"
+        required: true
+        type: string
+      exampleCommitTitle:
+        description: "An example of a valid commit title"
+        required: true
+        type: string
+
+permissions:
+  pull-requests: write
+  statuses: write
+
+jobs:
+  lint-pr-title:
+    name: Lint PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/semantic-pull-request
+        with:
+          types: ${{ inputs.types }}
+          requireScope: ${{ inputs.requireScope }}
+          scopes: ${{ inputs.scopes }}
+          subjectPattern: ${{ inputs.subjectPattern }}
+          exampleCommitTitle: ${{ inputs.exampleCommitTitle }}
