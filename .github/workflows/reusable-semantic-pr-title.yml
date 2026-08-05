@@ -40,6 +40,7 @@ on:
         default: "feat(ci): #1234 add new feature"
 
 permissions:
+  contents: read
   pull-requests: write
   statuses: write
 

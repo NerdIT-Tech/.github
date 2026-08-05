@@ -14,7 +14,8 @@ concurrency:
 
 jobs:
   lint-pr-title:
-    uses: ./.github/workflows/reusable-semantic-pr-title.yaml
+    uses: ./.github/workflows/reusable-semantic-pr-title.yml
     permissions:
+      contents: read
       pull-requests: write
       statuses: write
