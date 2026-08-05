@@ -1,7 +1,8 @@
 # Reusable workflows
 
 Reusable GitHub Actions workflows (`on: workflow_call`) shared across
-NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-title.yml).
+NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-title.yml)
+and [`reusable-yaml-lint.yml`](reusable-yaml-lint.yml).
 
 ## Conventions
 

@@ -1,0 +1,42 @@
+name: YAML Lint
+
+on:
+  workflow_call:
+    inputs:
+      config_file:
+        description: "Path to the yamllint config file"
+        required: false
+        type: string
+        default: ".yamllint.yml"
+      files:
+        description: "Newline-separated glob patterns of files to lint"
+        required: false
+        type: string
+        default: |
+          **/*.yml
+          **/*.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  lint-yaml:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Get changed YAML files
+        id: changed-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: ${{ inputs.files }}
+
+      - name: YAML Lint
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
+        with:
+          file_or_dir: ${{ steps.changed-files.outputs.all_changed_files }}
+          config_file: ${{ inputs.config_file }}
+          format: github
