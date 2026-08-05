@@ -2,7 +2,8 @@ name: release-please
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -16,6 +17,9 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v5
         id: release
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   move-major-tag:
     needs: release-please
