@@ -1,0 +1,24 @@
+name: Actionlint
+
+on:
+  workflow_call: {}
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: Lint workflow files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Enable annotations
+        run: echo "::add-matcher::.github/actionlint-matcher.json"
+        shell: bash
+
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # v1.7.12
+        with:
+          args: -color

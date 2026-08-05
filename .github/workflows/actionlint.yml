@@ -1,0 +1,21 @@
+name: Actionlint
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+
+concurrency:
+  group: actionlint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    uses: ./.github/workflows/reusable-actionlint.yml
+    permissions:
+      contents: read
