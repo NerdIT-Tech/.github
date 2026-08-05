@@ -1,0 +1,81 @@
+name: Terraform plan
+description: >-
+  Runs `terraform plan -no-color -input=false -out=<file>`. Requires the
+  calling job to have already run actions/checkout and either terraform-init
+  or terraform-init-s3 (this action assumes Terraform is installed and
+  already initialized against the root it's planning). Set continue-on-error:
+  true to let a failed plan continue past this step instead of failing the
+  job immediately -- useful when a caller wants to post the failed plan
+  somewhere before failing the job itself. In that case, DON'T check this
+  step's own outcome/conclusion from the caller: continue-on-error absorbs
+  the inner failure before it reaches the outer step, so the outer step
+  always reports "success" regardless of whether the plan actually failed.
+  Check the `outcome` output instead -- it reflects the real pass/fail of
+  `terraform plan`, unaffected by continue-on-error. To bound a hung plan,
+  set `timeout-minutes:` on the calling `uses:` step itself -- composite
+  action steps don't support that key, so it can't be an input here.
+
+inputs:
+  out-file:
+    description: Path to write the plan file to.
+    required: false
+    default: tfplan
+  no-comment:
+    description: >-
+      Don't post the plan output as a comment on the PR. This is useful if
+      you want to post the plan output somewhere else (e.g. a Slack channel)
+      instead of as a PR comment.
+    required: false
+    default: "false"
+  continue-on-error:
+    description: >-
+      Don't fail this step (or the job) if `terraform plan` fails -- check
+      the `outcome` output instead.
+    required: false
+    default: "false"
+  args:
+    description: Additional arguments to pass to `terraform plan`.
+    required: false
+    default: ""
+  working-directory:
+    description: Terraform root to plan.
+    required: false
+    default: "."
+
+outputs:
+  outcome:
+    description: >-
+      "success" or "failure" of the underlying `terraform plan` run,
+      regardless of continue-on-error -- read this, not the step's own
+      outcome/conclusion, when continue-on-error is true.
+    value: ${{ steps.plan.outcome }}
+  stdout:
+    description: Captured stdout of `terraform plan` (via setup-terraform's wrapper script).
+    value: ${{ steps.plan.outputs.stdout }}
+  out-file:
+    description: Path to write the plan file to.
+    value: ${{ inputs.out-file }}
+
+runs:
+  using: composite
+  steps:
+    - id: plan
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      continue-on-error: ${{ inputs.continue-on-error == 'true' }}
+      run: terraform plan -no-color -input=false -out=${{ inputs.out-file }} ${{ inputs.args }}
+    
+    - name: Comment plan on PR
+      uses: marocchino/sticky-pull-request-comment@v3
+      if: ${{ !cancelled() && inputs.no-comment != 'true' }}
+      with:
+        header: terraform-plan
+        message: |
+          ### Terraform Plan (`${{ steps.plan.outcome }}`)
+          <details><summary>Show plan</summary>
+
+          ```
+          ${{ steps.plan.outputs.stdout || '(no output captured)' }}
+          ```
+
+          </details>
