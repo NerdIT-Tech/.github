@@ -7,6 +7,6 @@
   ".github/actions/terraform-lint-scan": "0.0.0",
   ".github/actions/terraform-plan": "1.0.0",
   ".github/actions/terraform-release-lock": "0.0.0",
-  ".github/actions/terraform-validate": "0.0.0",
+  ".github/actions/terraform-validate": "1.0.0",
   ".github/actions/tflint": "1.0.0"
 }
