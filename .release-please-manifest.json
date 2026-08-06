@@ -2,7 +2,7 @@
   ".github/actions/resolve-pr": "1.0.0",
   ".github/actions/semantic-pull-request": "1.0.0",
   ".github/actions/terraform-fmt": "0.0.0",
-  ".github/actions/terraform-init": "0.0.0",
+  ".github/actions/terraform-init": "1.0.0",
   ".github/actions/terraform-init-s3": "0.0.0",
   ".github/actions/terraform-lint-scan": "0.0.0",
   ".github/actions/terraform-plan": "1.0.0",
