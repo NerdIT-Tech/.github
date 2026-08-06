@@ -12,8 +12,6 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    outputs:
-      paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
       - uses: googleapis/release-please-action@v5
         id: release
@@ -21,29 +19,27 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  move-major-tag:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.paths_released != '[]' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    strategy:
-      matrix:
-        path: ${{ fromJson(needs.release-please.outputs.paths_released) }}
-    steps:
       - uses: actions/checkout@v7
+        if: ${{ steps.release.outputs.paths_released != '[]' }}
         with:
           fetch-depth: 0
 
-      - name: Move floating major version tag
+      - name: Move floating major version tags
+        if: ${{ steps.release.outputs.paths_released != '[]' }}
         env:
-          TAG: ${{ needs.release-please.outputs[format('{0}--tag_name', matrix.path)] }}
+          PATHS_RELEASED: ${{ steps.release.outputs.paths_released }}
+          RELEASE_OUTPUTS: ${{ toJson(steps.release.outputs) }}
         run: |
-          VERSION="${TAG##*/v}"
-          COMPONENT="${TAG%/v"${VERSION}"}"
-          MAJOR="${VERSION%%.*}"
-          FLOAT_TAG="${COMPONENT}/v${MAJOR}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -f "$FLOAT_TAG" "$TAG"
-          git push origin "$FLOAT_TAG" --force
+          for path in $(jq -r '.[]' <<<"$PATHS_RELEASED"); do
+            key="${path}--tag_name"
+            [ "$path" = "." ] && key="tag_name"
+            TAG=$(jq -r --arg key "$key" '.[$key]' <<<"$RELEASE_OUTPUTS")
+            VERSION="${TAG##*/v}"
+            COMPONENT="${TAG%/v"${VERSION}"}"
+            MAJOR="${VERSION%%.*}"
+            FLOAT_TAG="${COMPONENT}/v${MAJOR}"
+            git tag -f "$FLOAT_TAG" "$TAG"
+            git push origin "$FLOAT_TAG" --force
+          done
