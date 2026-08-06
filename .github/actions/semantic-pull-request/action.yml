@@ -68,9 +68,10 @@ runs:
 
     - name: PR Title Lint Error
       uses: marocchino/sticky-pull-request-comment@v3
-      if: ${{ !cancelled() && steps.lint-pr-title.outputs.error_message != null && inputs.no-comment != 'true' }}
+      if: ${{ !cancelled() && steps.lint-pr-title.outcome == 'failure' && inputs.no-comment != 'true' }}
       with:
         header: pr-title-lint-error
+        number: ${{ github.event.pull_request.number }}
         message: |
           Hey there and thank you for opening this pull request! :wave:
 
@@ -86,7 +87,8 @@ runs:
 
     - name: Delete previous PR Title Lint Error
       uses: marocchino/sticky-pull-request-comment@v3
-      if: ${{ !cancelled() && steps.lint-pr-title.outputs.error_message == null && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') }}
+      if: ${{ !cancelled() && steps.lint-pr-title.outcome == 'success' }}
       with:
         header: pr-title-lint-error
+        number: ${{ github.event.pull_request.number }}
         delete: true
