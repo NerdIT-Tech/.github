@@ -12,9 +12,8 @@ description: >-
   show up inline on the PR's Files changed tab, the same way actionlint and
   yaml-lint do. No AWS credentials or state access required, so this is
   safe to run on untrusted PR branches. Requires the calling job to have
-  already run actions/checkout -- like any local action, this one has to be
-  resolvable on disk before it can run, so it can't check out the repo
-  itself as its first step.
+  already run actions/checkout, since fmt/validate/tflint/Trivy all need
+  the Terraform root present on disk to lint/scan.
 
 inputs:
   terraform-version:
@@ -40,23 +39,23 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/terraform-fmt
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-fmt@terraform-fmt/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/terraform-init
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         no-backend: "true"
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/terraform-validate
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-validate@terraform-validate/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/tflint
+    - uses: NerdIT-Tech/.github/.github/actions/tflint@tflint/v1
       with:
         tflint-version: ${{ inputs.tflint-version }}
         working-directory: ${{ inputs.working-directory }}

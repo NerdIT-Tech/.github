@@ -7,8 +7,8 @@ description: >-
   and runs `terraform init`) so callers don't have to wire both by hand.
   Use terraform-init directly instead of this for the no-backend / local-
   validation case, or if a project ever needs a non-S3 backend. Requires
-  the calling job to have already run actions/checkout -- like any local
-  action, this one has to be resolvable on disk before it can run.
+  the calling job to have already run actions/checkout, since terraform-
+  init needs the Terraform root present on disk.
 
 inputs:
   terraform-version:
@@ -45,7 +45,7 @@ runs:
         role-to-assume: ${{ inputs.role-to-assume }}
         aws-region: ${{ inputs.aws-region }}
 
-    - uses: ./.github/actions/terraform-init
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         working-directory: ${{ inputs.working-directory }}
