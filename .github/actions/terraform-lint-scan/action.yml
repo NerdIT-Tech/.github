@@ -40,23 +40,23 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/terraform-fmt
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-fmt@terraform-fmt/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/terraform-init
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         no-backend: "true"
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/terraform-validate
+    - uses: NerdIT-Tech/.github/.github/actions/terraform-validate@terraform-validate/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
         working-directory: ${{ inputs.working-directory }}
 
-    - uses: ./.github/actions/tflint
+    - uses: NerdIT-Tech/.github/.github/actions/tflint@tflint/v1
       with:
         tflint-version: ${{ inputs.tflint-version }}
         working-directory: ${{ inputs.working-directory }}

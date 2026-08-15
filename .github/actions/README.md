@@ -16,4 +16,12 @@ own subdirectory with an `action.yml` at its root.
         go-version: "1.22"
   ```
 
+- **Referencing a sibling action from within this repo**: a composite
+  action's `./`-relative `uses:` resolves against the *caller's* checkout,
+  not against `NerdIT-Tech/.github` — even when the caller is another
+  composite action that lives right next to it in this same repo. Reference
+  siblings the same fully-qualified way an external caller would (e.g.
+  `NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init/v1`),
+  not `./.github/actions/terraform-init`.
+
 See [`../workflows/README.md`](../workflows/README.md) for reusable `workflow_call` workflows.
