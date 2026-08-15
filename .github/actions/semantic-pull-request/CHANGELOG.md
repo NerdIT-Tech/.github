@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/NerdIT-Tech/.github/compare/semantic-pull-request/v1.0.0...semantic-pull-request/v1.0.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **ci:** make semantic PR title comment steps key off lint outcome ([#33](https://github.com/NerdIT-Tech/.github/issues/33)) ([91574e3](https://github.com/NerdIT-Tech/.github/commit/91574e3d91b05b4120d6851fda2d64eea493f65d)), closes [#17](https://github.com/NerdIT-Tech/.github/issues/17)
+
 ## 1.0.0 (2026-08-06)
 
 

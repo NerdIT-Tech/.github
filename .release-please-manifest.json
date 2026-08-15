@@ -1,6 +1,6 @@
 {
   ".github/actions/resolve-pr": "1.0.0",
-  ".github/actions/semantic-pull-request": "1.0.0",
+  ".github/actions/semantic-pull-request": "1.0.1",
   ".github/actions/terraform-fmt": "1.0.0",
   ".github/actions/terraform-init": "1.0.0",
   ".github/actions/terraform-init-s3": "1.0.0",
