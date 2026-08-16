@@ -40,6 +40,10 @@ inputs:
 runs:
   using: composite
   steps:
+    # Sibling actions below are referenced by their full NerdIT-Tech/.github
+    # path (not ./-relative), since a composite action's ./-relative uses:
+    # resolves against the top-level caller's checkout, not this repo --
+    # see #36.
     - uses: NerdIT-Tech/.github/.github/actions/terraform-fmt@terraform-fmt/v1
       with:
         terraform-version: ${{ inputs.terraform-version }}
