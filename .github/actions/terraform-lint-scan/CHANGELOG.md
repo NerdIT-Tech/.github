@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/NerdIT-Tech/.github/compare/terraform-lint-scan/v1.0.1...terraform-lint-scan/v1.0.2) (2026-09-04)
+
+
+### Bug Fixes
+
+* **terraform-lint-scan:** document why sibling actions use full paths ([#41](https://github.com/NerdIT-Tech/.github/issues/41)) ([19df023](https://github.com/NerdIT-Tech/.github/commit/19df023a0bca4d97039a26568383f25d4a34e4ea))
+
 ## [1.0.1](https://github.com/NerdIT-Tech/.github/compare/terraform-lint-scan/v1.0.0...terraform-lint-scan/v1.0.1) (2026-08-15)
 
 
