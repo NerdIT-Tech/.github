@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/NerdIT-Tech/.github/compare/terraform-init-s3/v1.0.1...terraform-init-s3/v1.0.2) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** [#34](https://github.com/NerdIT-Tech/.github/issues/34) relative action references resolve against caller repo, not this one ([#35](https://github.com/NerdIT-Tech/.github/issues/35)) ([a6dfc7a](https://github.com/NerdIT-Tech/.github/commit/a6dfc7ae264b00ba0d2f09105c78495ce54a5050))
+
 ## [1.0.1](https://github.com/NerdIT-Tech/.github/compare/terraform-init-s3/v1.0.0...terraform-init-s3/v1.0.1) (2026-08-15)
 
 
