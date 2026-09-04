@@ -1,0 +1,68 @@
+name: Zizmor
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "zizmor CLI version to install"
+        required: false
+        type: string
+        default: "1.30.0"
+      online-audits:
+        description: "Run audits that require GitHub API access"
+        required: false
+        type: boolean
+        default: true
+      fail-on-finding:
+        description: "Fail the workflow if any finding is reported"
+        required: false
+        type: boolean
+        default: false
+      collect:
+        description: "What to collect (workflows / actions / all)"
+        required: false
+        type: string
+        default: "all"
+      min-severity:
+        description: "Minimum severity to report (informational / low / medium / high)"
+        required: false
+        type: string
+        default: "informational"
+      min-confidence:
+        description: "Minimum confidence to report (low / medium / high)"
+        required: false
+        type: string
+        default: "low"
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: Audit workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        id: zizmor
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99  # v0.6.3
+        with:
+          inputs: "."
+          collect: ${{ inputs.collect }}
+          persona: auditor
+          min-severity: ${{ inputs.min-severity }}
+          min-confidence: ${{ inputs.min-confidence }}
+          version: ${{ inputs.version }}
+          online-audits: ${{ inputs.online-audits }}
+          advanced-security: false
+        continue-on-error: true
+
+      - name: Enforce findings
+        if: ${{ inputs.fail-on-finding && steps.zizmor.outcome == 'failure' }}
+        run: |
+          echo "::error::zizmor found issues — see annotations above."
+          exit 1
