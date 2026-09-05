@@ -45,6 +45,15 @@ inputs:
       Example of a valid PR title.
     required: false
     default: "feat(ci): #1234 add new feature"
+  ignoreLabels:
+    description: >-
+      Labels that exempt a pull request from title validation entirely. If the PR
+      has one of these labels (newline delimited), the lint is skipped for it.
+      Defaults to 'no-issue-required' so automation PRs (e.g. release-please's
+      "chore(release): release X 1.0.0") can be exempted by label rather than by
+      actor. amannn pairs this with `labeled`/`unlabeled` event triggers.
+    required: false
+    default: "no-issue-required"
 
 runs:
   using: composite
@@ -65,6 +74,7 @@ runs:
 
           Pattern: `${{ inputs.subjectPattern }}`
           Example: `${{ inputs.exampleCommitTitle }}`
+        ignoreLabels: ${{ inputs.ignoreLabels }}
 
     - name: PR Title Lint Error
       uses: marocchino/sticky-pull-request-comment@v3

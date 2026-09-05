@@ -6,7 +6,8 @@
   "separate-pull-requests": true,
   "include-component-in-tag": true,
   "tag-separator": "/",
-  "pull-request-title-pattern": "chore: release ${component} ${version}",
+  "pull-request-title-pattern": "chore(release): release ${component} ${version}",
+  "label": ["autorelease: pending", "no-issue-required"],
   "changelog-sections": [
     { "type": "feat", "section": "Features" },
     { "type": "fix", "section": "Bug Fixes" },
