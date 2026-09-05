@@ -38,6 +38,11 @@ on:
         required: false
         type: string
         default: "feat(ci): #1234 add new feature"
+      ignoreLabels:
+        description: "Labels that exempt a pull request from title validation entirely (newline delimited)"
+        required: false
+        type: string
+        default: "no-issue-required"
 
 permissions:
   contents: read
@@ -64,3 +69,4 @@ jobs:
           scopes: ${{ inputs.scopes }}
           subjectPattern: ${{ inputs.subjectPattern }}
           exampleCommitTitle: ${{ inputs.exampleCommitTitle }}
+          ignoreLabels: ${{ inputs.ignoreLabels }}
