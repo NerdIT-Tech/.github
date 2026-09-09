@@ -1,0 +1,43 @@
+name: Check Snippets
+
+on:
+  workflow_call:
+    inputs:
+      snippets-path:
+        description: "Path to the Go snippets directory to vet"
+        type: string
+        default: ""
+      snippets-dir:
+        description: "Directory containing snippet files with [START x] / [END x] markers"
+        type: string
+        default: ""
+      docs-dir:
+        description: "Directory containing documentation pages that reference regions"
+        type: string
+        default: ""
+
+permissions: {}
+
+jobs:
+  snippets:
+    name: Check Doc Snippets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Vet Go snippets
+        uses: NerdIT-Tech/.github/.github/actions/vet-go-snippets@vet-go-snippets/v1
+        with:
+          snippets-path: ${{ inputs.snippets-path }}
+
+      - name: Check snippet regions
+        uses: NerdIT-Tech/.github/.github/actions/check-snippet-regions@check-snippet-regions/v1
+        with:
+          snippets-dir: ${{ inputs.snippets-dir }}
+          docs-dir: ${{ inputs.docs-dir }}
