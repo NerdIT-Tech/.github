@@ -9,27 +9,163 @@
   "pull-request-title-pattern": "chore(release): release ${component} ${version}",
   "label": "autorelease: pending",
   "changelog-sections": [
-    { "type": "feat", "section": "Features" },
-    { "type": "fix", "section": "Bug Fixes" },
-    { "type": "perf", "section": "Performance Improvements" },
-    { "type": "deps", "section": "Dependencies" },
-    { "type": "revert", "section": "Reverts" },
-    { "type": "docs", "section": "Documentation", "hidden": true },
-    { "type": "chore", "section": "Miscellaneous", "hidden": true },
-    { "type": "refactor", "section": "Miscellaneous", "hidden": true },
-    { "type": "test", "section": "Miscellaneous", "hidden": true },
-    { "type": "ci", "section": "Miscellaneous", "hidden": true }
+    {
+      "type": "feat",
+      "section": "Features"
+    },
+    {
+      "type": "fix",
+      "section": "Bug Fixes"
+    },
+    {
+      "type": "perf",
+      "section": "Performance Improvements"
+    },
+    {
+      "type": "deps",
+      "section": "Dependencies"
+    },
+    {
+      "type": "revert",
+      "section": "Reverts"
+    },
+    {
+      "type": "docs",
+      "section": "Documentation",
+      "hidden": true
+    },
+    {
+      "type": "chore",
+      "section": "Miscellaneous",
+      "hidden": true
+    },
+    {
+      "type": "refactor",
+      "section": "Miscellaneous",
+      "hidden": true
+    },
+    {
+      "type": "test",
+      "section": "Miscellaneous",
+      "hidden": true
+    },
+    {
+      "type": "ci",
+      "section": "Miscellaneous",
+      "hidden": true
+    }
   ],
   "packages": {
-    ".github/actions/resolve-pr": { "component": "resolve-pr" },
-    ".github/actions/semantic-pull-request": { "component": "semantic-pull-request" },
-    ".github/actions/terraform-fmt": { "component": "terraform-fmt" },
-    ".github/actions/terraform-init": { "component": "terraform-init" },
-    ".github/actions/terraform-init-s3": { "component": "terraform-init-s3" },
-    ".github/actions/terraform-lint-scan": { "component": "terraform-lint-scan" },
-    ".github/actions/terraform-plan": { "component": "terraform-plan" },
-    ".github/actions/terraform-release-lock": { "component": "terraform-release-lock" },
-    ".github/actions/terraform-validate": { "component": "terraform-validate" },
-    ".github/actions/tflint": { "component": "tflint" }
+    ".github/actions/resolve-pr": {
+      "component": "resolve-pr"
+    },
+    ".github/actions/semantic-pull-request": {
+      "component": "semantic-pull-request"
+    },
+    ".github/actions/terraform-fmt": {
+      "component": "terraform-fmt"
+    },
+    ".github/actions/terraform-init": {
+      "component": "terraform-init"
+    },
+    ".github/actions/terraform-init-s3": {
+      "component": "terraform-init-s3"
+    },
+    ".github/actions/terraform-lint-scan": {
+      "component": "terraform-lint-scan"
+    },
+    ".github/actions/terraform-plan": {
+      "component": "terraform-plan"
+    },
+    ".github/actions/terraform-release-lock": {
+      "component": "terraform-release-lock"
+    },
+    ".github/actions/terraform-validate": {
+      "component": "terraform-validate"
+    },
+    ".github/actions/tflint": {
+      "component": "tflint"
+    },
+    ".github/actions/check-go-deps": {
+      "component": "check-go-deps"
+    },
+    ".github/actions/check-secret": {
+      "component": "check-secret"
+    },
+    ".github/actions/check-snippet-regions": {
+      "component": "check-snippet-regions"
+    },
+    ".github/actions/create-pr": {
+      "component": "create-pr"
+    },
+    ".github/actions/detect-changes": {
+      "component": "detect-changes"
+    },
+    ".github/actions/docs-build": {
+      "component": "docs-build"
+    },
+    ".github/actions/go-test": {
+      "component": "go-test"
+    },
+    ".github/actions/install-tparse": {
+      "component": "install-tparse"
+    },
+    ".github/actions/setup-go-env": {
+      "component": "setup-go-env"
+    },
+    ".github/actions/vet-go-snippets": {
+      "component": "vet-go-snippets"
+    },
+    ".github/workflows/reusable-build-go.yml": {
+      "component": "reusable-build-go"
+    },
+    ".github/workflows/reusable-check-go-deps.yml": {
+      "component": "reusable-check-go-deps"
+    },
+    ".github/workflows/reusable-check-license.yml": {
+      "component": "reusable-check-license"
+    },
+    ".github/workflows/reusable-check-snippets.yml": {
+      "component": "reusable-check-snippets"
+    },
+    ".github/workflows/reusable-codeql.yml": {
+      "component": "reusable-codeql"
+    },
+    ".github/workflows/reusable-docs-build.yml": {
+      "component": "reusable-docs-build"
+    },
+    ".github/workflows/reusable-docs-gate.yml": {
+      "component": "reusable-docs-gate"
+    },
+    ".github/workflows/reusable-e2e-go.yml": {
+      "component": "reusable-e2e-go"
+    },
+    ".github/workflows/reusable-govulncheck.yml": {
+      "component": "reusable-govulncheck"
+    },
+    ".github/workflows/reusable-lint-go.yml": {
+      "component": "reusable-lint-go"
+    },
+    ".github/workflows/reusable-lint-pr-title.yml": {
+      "component": "reusable-lint-pr-title"
+    },
+    ".github/workflows/reusable-scorecard.yml": {
+      "component": "reusable-scorecard"
+    },
+    ".github/workflows/reusable-stale-issues.yml": {
+      "component": "reusable-stale-issues"
+    },
+    ".github/workflows/reusable-sync-issue-labels.yml": {
+      "component": "reusable-sync-issue-labels"
+    },
+    ".github/workflows/reusable-test-go.yml": {
+      "component": "reusable-test-go"
+    },
+    ".github/workflows/reusable-vale-lint.yml": {
+      "component": "reusable-vale-lint"
+    },
+    ".github/workflows/reusable-zizmor.yml": {
+      "component": "reusable-zizmor"
+    }
   }
 }
