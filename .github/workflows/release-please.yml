@@ -26,10 +26,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for num in $(gh search prs --repo "$GITHUB_REPOSITORY" \
+          mapfile -t PR_NUMS < <(gh search prs --repo "$GITHUB_REPOSITORY" \
               --label 'autorelease: pending' --state open \
-              --json number --jq '.[].number'); do
-            gh api repos/$GITHUB_REPOSITORY/issues/$num/labels \
+              --json number --jq '.[].number')
+          for num in "${PR_NUMS[@]}"; do
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${num}/labels" \
               -f labels[]=no-issue-required >/dev/null
           done
 
@@ -46,7 +47,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for path in $(jq -r '.[]' <<<"$PATHS_RELEASED"); do
+          mapfile -t RELEASED_PATHS < <(jq -r '.[]' <<<"$PATHS_RELEASED")
+          for path in "${RELEASED_PATHS[@]}"; do
             key="${path}--tag_name"
             [ "$path" = "." ] && key="tag_name"
             TAG=$(jq -r --arg key "$key" '.[$key]' <<<"$RELEASE_OUTPUTS")
