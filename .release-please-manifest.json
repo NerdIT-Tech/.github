@@ -10,7 +10,7 @@
   ".github/actions/terraform-validate": "1.0.0",
   ".github/actions/tflint": "1.0.0",
   ".github/actions/check-go-deps": "0.1.0",
-  ".github/actions/check-secret": "0.0.0",
+  ".github/actions/check-secret": "0.1.0",
   ".github/actions/check-snippet-regions": "0.0.0",
   ".github/actions/create-pr": "0.0.0",
   ".github/actions/detect-changes": "0.0.0",
