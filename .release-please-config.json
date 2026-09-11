@@ -128,71 +128,88 @@
     },
     ".github/workflows/reusable-build-go.yml": {
       "component": "reusable-build-go",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-check-go-deps.yml": {
       "component": "reusable-check-go-deps",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-check-license.yml": {
       "component": "reusable-check-license",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-check-snippets.yml": {
       "component": "reusable-check-snippets",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-codeql.yml": {
       "component": "reusable-codeql",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-docs-build.yml": {
       "component": "reusable-docs-build",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-docs-gate.yml": {
       "component": "reusable-docs-gate",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-e2e-go.yml": {
       "component": "reusable-e2e-go",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-govulncheck.yml": {
       "component": "reusable-govulncheck",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-lint-go.yml": {
       "component": "reusable-lint-go",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-lint-pr-title.yml": {
       "component": "reusable-lint-pr-title",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-scorecard.yml": {
       "component": "reusable-scorecard",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-stale-issues.yml": {
       "component": "reusable-stale-issues",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-sync-issue-labels.yml": {
       "component": "reusable-sync-issue-labels",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-test-go.yml": {
       "component": "reusable-test-go",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-vale-lint.yml": {
       "component": "reusable-vale-lint",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-zizmor.yml": {
       "component": "reusable-zizmor",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     }
   }
 }
