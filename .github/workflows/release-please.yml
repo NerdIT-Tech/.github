@@ -18,7 +18,6 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          release-search-depth: 100
 
       # release-please's config only supports a single PR label, so the
       # `no-issue-required` title-lint exemption label is applied here instead.
