@@ -35,5 +35,5 @@
   ".github/workflows/reusable-sync-issue-labels.yml": "0.1.0",
   ".github/workflows/reusable-test-go.yml": "0.1.0",
   ".github/workflows/reusable-vale-lint.yml": "0.1.0",
-  ".github/workflows/reusable-zizmor.yml": "0.0.0"
+  ".github/workflows/reusable-zizmor.yml": "0.1.0"
 }
