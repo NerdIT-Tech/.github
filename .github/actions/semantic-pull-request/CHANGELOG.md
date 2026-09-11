@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/NerdIT-Tech/.github/compare/semantic-pull-request/v1.0.1...semantic-pull-request/v1.0.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* **ci:** [#42](https://github.com/NerdIT-Tech/.github/issues/42) exempt release PRs from title lint via no-issue-required label ([#48](https://github.com/NerdIT-Tech/.github/issues/48)) ([932104a](https://github.com/NerdIT-Tech/.github/commit/932104a18c444a3ce3c7aea5760023aa3b393146))
+
 ## [1.0.1](https://github.com/NerdIT-Tech/.github/compare/semantic-pull-request/v1.0.0...semantic-pull-request/v1.0.1) (2026-08-15)
 
 
