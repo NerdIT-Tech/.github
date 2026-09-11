@@ -15,7 +15,7 @@
   ".github/actions/create-pr": "0.0.0",
   ".github/actions/detect-changes": "0.0.0",
   ".github/actions/docs-build": "0.0.0",
-  ".github/actions/go-test": "0.0.0",
+  ".github/actions/go-test": "0.1.0",
   ".github/actions/install-tparse": "0.1.0",
   ".github/actions/setup-go-env": "0.1.0",
   ".github/actions/vet-go-snippets": "0.0.0",
