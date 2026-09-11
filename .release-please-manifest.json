@@ -24,7 +24,7 @@
   ".github/workflows/reusable-check-license.yml": "0.1.0",
   ".github/workflows/reusable-check-snippets.yml": "0.1.0",
   ".github/workflows/reusable-codeql.yml": "0.1.0",
-  ".github/workflows/reusable-docs-build.yml": "0.0.0",
+  ".github/workflows/reusable-docs-build.yml": "0.1.0",
   ".github/workflows/reusable-docs-gate.yml": "0.0.0",
   ".github/workflows/reusable-e2e-go.yml": "0.0.0",
   ".github/workflows/reusable-govulncheck.yml": "0.0.0",
