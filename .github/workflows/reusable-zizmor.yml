@@ -1,68 +1,79 @@
-name: Zizmor
+name: GitHub Actions Security Analysis (zizmor)
 
 on:
   workflow_call:
     inputs:
       version:
         description: "zizmor CLI version to install"
-        required: false
         type: string
-        default: "1.30.0"
+        default: "1.29.0"
       online-audits:
-        description: "Run audits that require GitHub API access"
-        required: false
+        description: "Enable online audits (requires network access)"
         type: boolean
         default: true
-      fail-on-finding:
-        description: "Fail the workflow if any finding is reported"
-        required: false
+      advanced-security:
+        description: "Upload SARIF results to GitHub code scanning"
         type: boolean
         default: false
-      collect:
-        description: "What to collect (workflows / actions / all)"
-        required: false
-        type: string
-        default: "all"
       min-severity:
-        description: "Minimum severity to report (informational / low / medium / high)"
-        required: false
+        description: "Minimum severity level to report"
         type: string
         default: "informational"
       min-confidence:
-        description: "Minimum confidence to report (low / medium / high)"
-        required: false
+        description: "Minimum confidence level to report"
         type: string
         default: "low"
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   zizmor:
-    name: Audit workflows
+    name: Run zizmor -- blocking
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+    permissions:
+      contents: read  # checkout
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 
       - name: Run zizmor
-        id: zizmor
         uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99  # v0.6.3
         with:
           inputs: "."
-          collect: ${{ inputs.collect }}
+          collect: all
           persona: auditor
           min-severity: ${{ inputs.min-severity }}
           min-confidence: ${{ inputs.min-confidence }}
           version: ${{ inputs.version }}
           online-audits: ${{ inputs.online-audits }}
           advanced-security: false
-        continue-on-error: true
 
-      - name: Enforce findings
-        if: ${{ inputs.fail-on-finding && steps.zizmor.outcome == 'failure' }}
-        run: |
-          echo "::error::zizmor found issues — see annotations above."
-          exit 1
+  zizmor-sarif:
+    name: Run zizmor -- SARIF upload
+    if: ${{ inputs.advanced-security }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write  # SARIF upload to code scanning
+      actions: read  # upload-sarif workflow metadata (private repos)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor (SARIF)
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99  # v0.6.3
+        with:
+          inputs: "."
+          collect: all
+          persona: auditor
+          min-severity: ${{ inputs.min-severity }}
+          min-confidence: ${{ inputs.min-confidence }}
+          version: ${{ inputs.version }}
+          online-audits: ${{ inputs.online-audits }}
+          advanced-security: true
