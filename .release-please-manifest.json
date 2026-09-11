@@ -30,7 +30,7 @@
   ".github/workflows/reusable-govulncheck.yml": "0.1.0",
   ".github/workflows/reusable-lint-go.yml": "0.1.0",
   ".github/workflows/reusable-lint-pr-title.yml": "0.1.0",
-  ".github/workflows/reusable-scorecard.yml": "0.0.0",
+  ".github/workflows/reusable-scorecard.yml": "0.1.0",
   ".github/workflows/reusable-stale-issues.yml": "0.0.0",
   ".github/workflows/reusable-sync-issue-labels.yml": "0.0.0",
   ".github/workflows/reusable-test-go.yml": "0.0.0",
