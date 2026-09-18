@@ -32,12 +32,12 @@ jobs:
           persist-credentials: false
 
       - name: Vet Go snippets
-        uses: NerdIT-Tech/.github/.github/actions/vet-go-snippets@vet-go-snippets/v1
+        uses: NerdIT-Tech/.github/.github/actions/vet-go-snippets@a26b727e937473936d8596cae0111fc4a348e034  # v0.1.0
         with:
           snippets-path: ${{ inputs.snippets-path }}
 
       - name: Check snippet regions
-        uses: NerdIT-Tech/.github/.github/actions/check-snippet-regions@check-snippet-regions/v1
+        uses: NerdIT-Tech/.github/.github/actions/check-snippet-regions@2bacc9102025b40ce8f2ce3ad85f099fa6f12aee  # v0.1.0
         with:
           snippets-dir: ${{ inputs.snippets-dir }}
           docs-dir: ${{ inputs.docs-dir }}

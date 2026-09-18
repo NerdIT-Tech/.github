@@ -32,7 +32,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Check root module tidiness
-        uses: NerdIT-Tech/.github/.github/actions/check-go-deps@check-go-deps/v1
+        uses: NerdIT-Tech/.github/.github/actions/check-go-deps@82c8b1b7ad4e80e33b3f20e11195094e8d3c6bb9  # v0.1.0
         with:
           package-path: ${{ inputs.package-path }}
           go-version: ${{ inputs.go-version }}
