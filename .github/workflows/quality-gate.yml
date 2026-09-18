@@ -158,8 +158,19 @@ jobs:
           coverage-profile: coverage.out
           package-paths: "./..."
           working-directory: "."
+      - name: Check whether a Codecov token is configured
+        id: cover
+        shell: bash
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [ -n "${CODECOV_TOKEN}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Upload coverage to Codecov
-        if: runner.os == 'Linux' && matrix.go-version == 'stable' && secrets.CODECOV_TOKEN != ''
+        if: runner.os == 'Linux' && matrix.go-version == 'stable' && steps.cover.outputs.present == 'true'
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           files: coverage.out
@@ -200,10 +211,12 @@ jobs:
       - name: Configure mocked instance environment
         shell: bash
         run: |
-          echo "SN_OFFLINE=true" >> "$GITHUB_ENV"
-          echo "SN_INSTANCE=mock_instance" >> "$GITHUB_ENV"
-          echo "SN_USERNAME=mock_user" >> "$GITHUB_ENV"
-          echo "SN_PASSWORD=mock_password" >> "$GITHUB_ENV"
+          {
+            echo "SN_OFFLINE=true"
+            echo "SN_INSTANCE=mock_instance"
+            echo "SN_USERNAME=mock_user"
+            echo "SN_PASSWORD=mock_password"
+          } >> "$GITHUB_ENV"
       - name: Install tparse
         uses: NerdIT-Tech/.github/.github/actions/install-tparse@cc832ff8ab108890d3fdc4553be9d4b4265d8f06 # v0.1.0
         with:
