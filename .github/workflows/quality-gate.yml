@@ -1,0 +1,249 @@
+name: Quality Gate
+
+# The one canonical Go quality gate: modules tidy, build, lint, unit tests,
+# mocked integration tests, and the vulnerability scan. Consumers call this
+# reusable so the PR gate, the scheduled matrix, and release verification all
+# run literally the same checks. The matrices live here, not in callers.
+#
+# The optional `ref` input lets release verification run the gate against a
+# concrete tagged ref (for example refs/tags/v2.0.3). An empty `ref` checks
+# out the event ref, which is how PR and push runs get the head commit.
+#
+# Versioning: this file is tagged as `quality-gate/vX.Y.Z`; consumers pin to
+# the tag's commit SHA. This component is not wired into release-please, so a
+# change here needs a manual re-tag if the floating `/vX` tags are kept.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Ref to check out before running the gate; empty checks out the event ref"
+        required: false
+        default: ""
+        type: string
+      golangci-lint-version:
+        description: "golangci-lint version used by the lint leg"
+        required: false
+        default: "v2.13.0"
+        type: string
+    secrets:
+      CODECOV_TOKEN:
+        description: "Codecov token used to upload coverage; empty skips the upload"
+        required: false
+
+concurrency:
+  group: quality-gate-${{ github.workflow_ref }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  check-go-modules:
+    name: Check Go Modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ["stable", "oldstable"]
+        package-path: [".", "tests/integration/v2"]
+    permissions:
+      contents: read # checkout and dependency checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+      - name: Check module tidiness
+        uses: NerdIT-Tech/.github/.github/actions/check-go-deps@82c8b1b7ad4e80e33b3f20e11195094e8d3c6bb9 # v0.1.0
+        with:
+          package-path: ${{ matrix.package-path }}
+          go-version: ${{ matrix.go-version }}
+
+  build-go:
+    name: Build Go Code
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        go-version: ["stable", "oldstable"]
+    permissions:
+      contents: read # checkout and build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+      - name: Set up Go
+        uses: NerdIT-Tech/.github/.github/actions/setup-go-env@f7b870591d8dd7c1194252741befba9766b45200 # v0.1.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: "true"
+          checkout: "false"
+      - name: Build Go Code
+        shell: bash
+        run: |
+          PACKAGES=$(go list ./... | grep -v "/docs")
+          read -r -a PACKAGES_ARRAY <<< "$PACKAGES"
+          go build "${PACKAGES_ARRAY[@]}"
+
+  lint-go:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ["stable", "oldstable"]
+    permissions:
+      contents: read # checkout and lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+      - name: Set up Go
+        uses: NerdIT-Tech/.github/.github/actions/setup-go-env@f7b870591d8dd7c1194252741befba9766b45200 # v0.1.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: "true"
+          checkout: "false"
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
+        with:
+          install-mode: goinstall
+          version: ${{ inputs.golangci-lint-version }}
+          skip-cache: false
+          args: --timeout=5m
+
+  test-go:
+    name: Test Go Code
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        go-version: ["stable", "oldstable"]
+    permissions:
+      contents: read # checkout and build
+      pull-requests: write # sticky PR comment on failure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+      - name: Set up Go
+        # cache disabled per zizmor cache-poisoning audit; the gate has no
+        # short-lived-coverage or fork-cache need beyond the plain build cache.
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: false
+      - name: Install tparse
+        uses: NerdIT-Tech/.github/.github/actions/install-tparse@cc832ff8ab108890d3fdc4553be9d4b4265d8f06 # v0.1.0
+        with:
+          tparse-version: v0.18.0
+      - name: Run Tests
+        uses: NerdIT-Tech/.github/.github/actions/go-test@8f840b1d020b8c0b7900adeebd5132b93aa2313a # v0.1.0
+        with:
+          format-json: true
+          verbose: true
+          coverage-profile: coverage.out
+          package-paths: "./..."
+          working-directory: "."
+      - name: Upload coverage to Codecov
+        if: runner.os == 'Linux' && matrix.go-version == 'stable' && secrets.CODECOV_TOKEN != ''
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        with:
+          files: coverage.out
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Post Sticky Comment
+        if: failure()
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: test-failure-summary
+          message: "One or more tests failed on ${{ matrix.os }} with Go ${{ matrix.go-version }}. See the [Actions tab](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
+      - name: Delete Test Failure Comment
+        if: success()
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: test-failure-summary
+          delete: true
+
+  integration-mocked:
+    name: Integration Tests (mocked)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read # checkout and mocked integration tests
+      pull-requests: write # sticky PR comment on failure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "stable"
+          cache: false
+      - name: Configure mocked instance environment
+        shell: bash
+        run: |
+          echo "SN_OFFLINE=true" >> "$GITHUB_ENV"
+          echo "SN_INSTANCE=mock_instance" >> "$GITHUB_ENV"
+          echo "SN_USERNAME=mock_user" >> "$GITHUB_ENV"
+          echo "SN_PASSWORD=mock_password" >> "$GITHUB_ENV"
+      - name: Install tparse
+        uses: NerdIT-Tech/.github/.github/actions/install-tparse@cc832ff8ab108890d3fdc4553be9d4b4265d8f06 # v0.1.0
+        with:
+          tparse-version: v0.18.0
+      - name: Run integration tests
+        uses: NerdIT-Tech/.github/.github/actions/go-test@8f840b1d020b8c0b7900adeebd5132b93aa2313a # v0.1.0
+        with:
+          format-json: true
+          verbose: true
+          coverage-profile: ""
+          build-flags: "-tags integration"
+          package-paths: "./..."
+          working-directory: "./tests/integration/v2"
+      - name: Post Sticky Comment
+        if: failure()
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: test-failure-summary
+          message: "Mocked integration tests failed on ubuntu-latest with Go stable. See the [Actions tab](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
+      - name: Delete Test Failure Comment
+        if: success()
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: test-failure-summary
+          delete: true
+
+  govulncheck:
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read # checkout and govulncheck scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+      - name: Run govulncheck
+        uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1
+        with:
+          go-version-input: "stable"
+          repo-checkout: "false" # checked out above, at the target ref
