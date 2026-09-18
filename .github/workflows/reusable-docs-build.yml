@@ -40,7 +40,7 @@ jobs:
           persist-credentials: false
 
       - name: Build site
-        uses: NerdIT-Tech/.github/.github/actions/docs-build@docs-build/v1
+        uses: NerdIT-Tech/.github/.github/actions/docs-build@c83e367706b5593dc2e74adb4e486e13e052ed43  # v0.1.0
         with:
           working-directory: ${{ inputs.working-directory }}
           base-url: ${{ inputs.base-url }}

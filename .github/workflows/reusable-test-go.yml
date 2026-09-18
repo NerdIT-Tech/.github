@@ -62,7 +62,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Install tparse
-        uses: NerdIT-Tech/.github/.github/actions/install-tparse@install-tparse/v1
+        uses: NerdIT-Tech/.github/.github/actions/install-tparse@cc832ff8ab108890d3fdc4553be9d4b4265d8f06  # v0.1.0
         with:
           tparse-version: ${{ inputs.tparse-version }}
       - name: Configure environment
@@ -79,7 +79,7 @@ jobs:
           EOF
       - name: Run Tests
         id: test-run
-        uses: NerdIT-Tech/.github/.github/actions/go-test@go-test/v1
+        uses: NerdIT-Tech/.github/.github/actions/go-test@8f840b1d020b8c0b7900adeebd5132b93aa2313a  # v0.1.0
         with:
           format-json: true
           verbose: true

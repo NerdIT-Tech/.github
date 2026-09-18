@@ -29,7 +29,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: NerdIT-Tech/.github/.github/actions/setup-go-env@setup-go-env/v1
+      - uses: NerdIT-Tech/.github/.github/actions/setup-go-env@f7b870591d8dd7c1194252741befba9766b45200  # v0.1.0
         with:
           go-version: ${{ inputs.go-version }}
           cache: "false"
