@@ -20,3 +20,7 @@ jobs:
     uses: ./.github/workflows/reusable-zizmor.yml
     permissions:
       contents: read  # checkout
+      # Required by the callee's zizmor-sarif job; without these the call
+      # fails at startup with zero jobs created.
+      security-events: write  # SARIF upload to code scanning
+      actions: read  # upload-sarif workflow metadata (private repos)
