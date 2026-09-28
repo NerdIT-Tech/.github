@@ -40,20 +40,38 @@ runs:
       id: fmt
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      # env, not inline ${{ }}: Actions expands template syntax before the
+      # script is written to disk, so the flag ternaries belong in the shell,
+      # where the values are only ever literals this step itself produces.
+      env:
+        FMT_CHECK: ${{ inputs.check }}
+        FMT_RECURSIVE: ${{ inputs.recursive }}
+        FMT_DIFF: ${{ inputs.diff }}
       run: |
-        terraform fmt \
-          ${{ inputs.check == 'true' && '-check' || '' }} \
-          ${{ inputs.recursive == 'true' && '-recursive' || '' }} \
-          ${{ inputs.diff == 'true' && '-diff' || '' }}
+        set -euo pipefail
+        args=()
+        if [ "$FMT_CHECK" = "true" ]; then args+=(-check); fi
+        if [ "$FMT_RECURSIVE" = "true" ]; then args+=(-recursive); fi
+        if [ "$FMT_DIFF" = "true" ]; then args+=(-diff); fi
+        terraform fmt "${args[@]}"
 
     - name: Annotate unformatted files
       if: failure() && inputs.check == 'true'
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      # env, not inline ${{ }}: the working directory is caller-supplied and
+      # would otherwise be spliced straight into the generated script.
+      env:
+        FMT_RECURSIVE: ${{ inputs.recursive }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        wd="${{ inputs.working-directory }}"
+        set -euo pipefail
+        wd="$WORKING_DIRECTORY"
         wd="${wd%/}"
         if [ "$wd" = "." ]; then prefix=""; else prefix="${wd#./}/"; fi
+
+        args=()
+        if [ "$FMT_RECURSIVE" = "true" ]; then args+=(-recursive); fi
 
         file=""
         while IFS= read -r diffline; do
@@ -68,4 +86,4 @@ runs:
             "") ;;
             *) file="$diffline" ;;
           esac
-        done < <(terraform fmt -check ${{ inputs.recursive == 'true' && '-recursive' || '' }} -diff -no-color)
+        done < <(terraform fmt -check "${args[@]}" -diff -no-color)

@@ -37,4 +37,19 @@ runs:
     - name: terraform init
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: terraform init ${{ inputs.no-backend == 'true' && '-backend=false' || '' }} ${{ inputs.args }}
+      # Inputs come in via env, not spliced into the script: Actions expands
+      # ${{ }} before the runner writes the script to disk, so an arg carrying
+      # a newline or a shell metacharacter would execute as a command. The
+      # shell expanding ${VAR} itself keeps it a single argument instead.
+      env:
+        NO_BACKEND: ${{ inputs.no-backend }}
+        EXTRA_ARGS: ${{ inputs.args }}
+      run: |
+        set -euo pipefail
+        args=()
+        if [ "$NO_BACKEND" = "true" ]; then args+=(-backend=false); fi
+        if [ -n "$EXTRA_ARGS" ]; then
+          read -r -a extra_args <<< "$EXTRA_ARGS"
+          args+=("${extra_args[@]}")
+        fi
+        terraform init "${args[@]}"

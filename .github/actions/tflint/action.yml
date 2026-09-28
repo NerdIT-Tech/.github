@@ -38,10 +38,15 @@ runs:
       id: tflint
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      # env, not inline ${{ }}: Actions expands template syntax before the
+      # script is written to disk, so the flag ternary is built in the shell.
+      env:
+        TFLINT_RECURSIVE: ${{ inputs.recursive }}
       run: |
-        tflint \
-          ${{ inputs.recursive == 'true' && '--recursive' || '' }} \
-          --format=json > tflint-result.json
+        set -euo pipefail
+        args=()
+        if [ "$TFLINT_RECURSIVE" = "true" ]; then args+=(--recursive); fi
+        tflint "${args[@]}" --format=json > tflint-result.json
 
     - name: Annotate tflint issues
       if: failure()

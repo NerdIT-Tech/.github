@@ -68,15 +68,34 @@ jobs:
       - name: Configure environment
         if: inputs.env-vars != ''
         shell: bash
+        # env, not inline ${{ }}: Actions expands template syntax before this
+        # script is written to disk, so a newline in env-vars would splice in
+        # extra commands, and the surviving lines then land in $GITHUB_ENV,
+        # which applies to every later step. Read the value at runtime instead.
+        env:
+          ENV_VARS: ${{ inputs.env-vars }}
         run: |
-          while IFS= read -r line; do
+          set -euo pipefail
+          while IFS= read -r line || [ -n "$line" ]; do
             case "$line" in
               ''|\#*) continue ;;
             esac
-            echo "$line" >> "$GITHUB_ENV"
-          done <<'EOF'
-          ${{ inputs.env-vars }}
-          EOF
+            # $GITHUB_ENV entries are executable configuration for the rest of
+            # the job, so only well-formed KEY=VALUE assignments get through;
+            # anything else is rejected instead of being written blindly.
+            if [[ ! "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
+              # Escape before echoing: the offending line is caller-supplied and
+              # a raw % or CR would otherwise truncate the annotation or forge
+              # a following workflow command. Same order as the esc/escprop
+              # helpers in terraform-validate.
+              esc="${line//'%'/'%25'}"
+              esc="${esc//$'\r'/'%0D'}"
+              esc="${esc//$'\n'/'%0A'}"
+              echo "::error::env-vars entry is not a KEY=VALUE assignment:${esc}"
+              exit 1
+            fi
+            printf '%s\n' "$line" >> "$GITHUB_ENV"
+          done <<< "$ENV_VARS"
       - name: Run Tests
         id: test-run
         uses: NerdIT-Tech/.github/.github/actions/go-test@8f840b1d020b8c0b7900adeebd5132b93aa2313a  # v0.1.0

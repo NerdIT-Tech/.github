@@ -63,8 +63,21 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       continue-on-error: ${{ inputs.continue-on-error == 'true' }}
-      run: terraform plan -no-color -input=false -out=${{ inputs.out-file }} ${{ inputs.args }}
-    
+      # env, not inline ${{ }}: the out-file path and args are caller-supplied,
+      # and Actions would splice them into the generated script verbatim. The
+      # shell expanding ${VAR} keeps each one a single argument.
+      env:
+        OUT_FILE: ${{ inputs.out-file }}
+        EXTRA_ARGS: ${{ inputs.args }}
+      run: |
+        set -euo pipefail
+        args=(-no-color -input=false "-out=$OUT_FILE")
+        if [ -n "$EXTRA_ARGS" ]; then
+          read -r -a extra_args <<< "$EXTRA_ARGS"
+          args+=("${extra_args[@]}")
+        fi
+        terraform plan "${args[@]}"
+
     - name: Comment plan on PR
       uses: marocchino/sticky-pull-request-comment@v3
       if: ${{ !cancelled() && inputs.no-comment != 'true' }}
