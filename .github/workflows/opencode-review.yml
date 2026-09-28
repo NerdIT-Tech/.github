@@ -27,7 +27,10 @@ jobs:
     with:
       # Replaced with NerdIT-Tech/.github/.github/workflows/reusable-opencode-review.yml@reusable-opencode-review/v1
       # once release-please tags the component.
-      model: opencode/big-pickle
+      # Free Zen tier: anonymous lane, no OPENCODE_API_KEY required. The model
+      # must be one the Zen API actually serves; verified serving models are
+      # flagged in PR #136. big-pickle is NOT served upstream and is app-internal.
+      model: opencode/deepseek-v4-flash-free
     permissions:
       contents: read  # checkout the pull request head
       pull-requests: write  # post the review; dismiss superseded ones
