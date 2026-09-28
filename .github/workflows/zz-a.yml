@@ -1,0 +1,20 @@
+name: Diag A Explicit Inputs
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/zz-*.yml"
+permissions: {}
+concurrency:
+  group: diaga-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  zizmor:
+    uses: ./.github/workflows/reusable-zizmor.yml
+    with:
+      version: "1.29.0"
+      online-audits: true
+      advanced-security: false
+      min-severity: informational
+      min-confidence: low
+    permissions:
+      contents: read

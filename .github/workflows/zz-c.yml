@@ -1,0 +1,14 @@
+name: Diag C No Reusable
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/zz-*.yml"
+permissions: {}
+concurrency:
+  group: diagc-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  noperm:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi

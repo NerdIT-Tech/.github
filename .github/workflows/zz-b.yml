@@ -1,0 +1,14 @@
+name: Diag B No Inputs
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/zz-*.yml"
+permissions: {}
+concurrency:
+  group: diagb-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  zj:
+    uses: ./.github/workflows/reusable-zizmor.yml
+    permissions:
+      contents: read
