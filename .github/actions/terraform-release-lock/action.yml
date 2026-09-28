@@ -24,6 +24,13 @@ runs:
   steps:
     - name: Release state lock
       shell: bash
+      # env, not inline ${{ }}: bucket, key and region are caller-supplied, and
+      # Actions would splice them into the generated script before the shell
+      # ever sees the quotes. ${VAR} keeps the shell doing the expansion.
+      env:
+        STATE_BUCKET: ${{ inputs.state-bucket }}
+        STATE_KEY: ${{ inputs.state-key }}
+        AWS_REGION: ${{ inputs.aws-region }}
       run: |
-        aws s3 rm "s3://${{ inputs.state-bucket }}/${{ inputs.state-key }}.tflock" \
-          --region "${{ inputs.aws-region }}" || true
+        aws s3 rm "s3://${STATE_BUCKET}/${STATE_KEY}.tflock" \
+          --region "${AWS_REGION}" || true
