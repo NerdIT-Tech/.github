@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       model:
-        description: "Model to run the review with, in provider/model form (e.g. opencode/big-pickle)"
+        description: "Model to run the review with, in provider/model form. Free Zen models work anonymously; opencode/big-pickle is NOT served upstream."
         type: string
-        default: "opencode/big-pickle"
+        default: "opencode/deepseek-v4-flash-free"
       agent:
         description: "Name of the primary agent written into the workspace. Must match the agent file this workflow writes."
         type: string
@@ -48,8 +48,8 @@ on:
         default: 15
     secrets:
       OPENCODE_API_KEY:
-        description: "opencode API key for the opencode provider (model: opencode/big-pickle)."
-        required: true
+        description: "Optional opencode Zen API key. Omit it to use the anonymous free tier; the config step then drops the provider override."
+        required: false
 
 # permissions: {} at workflow level; every grant is made per job and annotated.
 # Matches reusable-zizmor.yml:27-33 and the rest of the fleet.
@@ -121,8 +121,15 @@ jobs:
             }
           }
           JSON
-          jq '.provider.opencode.options.apiKey = $k' --arg k "${OPENCODE_API_KEY}" opencode.json > opencode.json.tmp
-          mv opencode.json.tmp opencode.json
+          if [ -n "${OPENCODE_API_KEY:-}" ]; then
+            jq '.provider.opencode.options.apiKey = $k' --arg k "${OPENCODE_API_KEY}" opencode.json > opencode.json.tmp
+            mv opencode.json.tmp opencode.json
+          else
+            # No API key configured: drop the provider override so the binary
+            # falls back to its anonymous free tier (options.apiKey="public").
+            jq 'del(.provider)' opencode.json > opencode.json.tmp
+            mv opencode.json.tmp opencode.json
+          fi
           mkdir -p .opencode/agents
           cat >.opencode/agents/pr-review.md <<'MD'
           ---
