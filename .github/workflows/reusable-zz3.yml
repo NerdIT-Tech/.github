@@ -1,0 +1,42 @@
+name: GitHub Actions Security Analysis (zizmor)
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "zizmor CLI version to install"
+        type: string
+        default: "1.29.0"
+      online-audits:
+        description: "Enable online audits (requires network access)"
+        type: boolean
+        default: true
+      advanced-security:
+        description: "Upload SARIF results to GitHub code scanning"
+        type: boolean
+        default: false
+      min-severity:
+        description: "Minimum severity level to report"
+        type: string
+        default: "informational"
+      min-confidence:
+        description: "Minimum confidence level to report"
+        type: string
+        default: "low"
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: Run zizmor -- blocking
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read  # checkout
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run zizmor
+        run: echo "would run zizmor"

@@ -1,0 +1,11 @@
+name: Diag F
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/zz-*.yml"
+permissions: {}
+jobs:
+  callF:
+    uses: ./.github/workflows/reusable-zz3.yml
+    permissions:
+      contents: read

@@ -1,0 +1,11 @@
+name: Diag E
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/zz-*.yml"
+permissions: {}
+jobs:
+  callE:
+    uses: ./.github/workflows/reusable-zz2.yml
+    permissions:
+      contents: read
