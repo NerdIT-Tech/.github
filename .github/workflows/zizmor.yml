@@ -1,0 +1,22 @@
+name: Workflow Security Audit
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - ".github/dependabot.yml"
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions: {}
+
+concurrency:
+  group: zizmor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zizmor:
+    uses: ./.github/workflows/reusable-zizmor.yml
+    permissions:
+      contents: read  # checkout

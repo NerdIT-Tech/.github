@@ -1,0 +1,5 @@
+# Workflow and action changes ship to every consuming repo at once.
+*                                    @michaeldcanady
+/.github/workflows/                  @michaeldcanady
+/.github/actions/                    @michaeldcanady
+/.github/dependabot.yml              @michaeldcanady

@@ -1,0 +1,24 @@
+name: Scorecard Analysis
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - ".github/dependabot.yml"
+  schedule:
+    - cron: "47 4 * * 1"
+
+permissions: {}
+
+concurrency:
+  group: scorecard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scorecard:
+    uses: ./.github/workflows/reusable-scorecard.yml
+    permissions:
+      contents: read  # checkout
+      security-events: write  # SARIF upload to code scanning
+      id-token: write  # OIDC token for publish_results
