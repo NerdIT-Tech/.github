@@ -6,7 +6,7 @@ on:
       model:
         description: "Model to run the review with, in provider/model form. Free Zen models work anonymously; opencode/big-pickle is NOT served upstream."
         type: string
-        default: "opencode/deepseek-v4-flash-free"
+        default: "opencode/nemotron-3-ultra-free"
       agent:
         description: "Name of the primary agent written into the workspace. Must match the agent file this workflow writes."
         type: string
