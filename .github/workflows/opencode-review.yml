@@ -1,0 +1,38 @@
+name: opencode Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+concurrency:
+  # One review per pull request at a time. A push sequence of five commits must
+  # cost one review, not five.
+  group: opencode-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  review:
+    # Fork pull requests carry no repository secrets, so the call is pointless
+    # there. The reusable workflow repeats this guard; keeping it here too makes
+    # the skip visible on the pull request itself.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/reusable-opencode-review.yml
+    with:
+      # Replaced with NerdIT-Tech/.github/.github/workflows/reusable-opencode-review.yml@reusable-opencode-review/v1
+      # once release-please tags the component.
+      # Free Zen tier: anonymous lane, no OPENCODE_API_KEY required. The model
+      # must be one the Zen API actually serves; verified serving models are
+      # flagged in PR #136. big-pickle is NOT served upstream and is app-internal.
+      model: opencode/nemotron-3-ultra-free
+    permissions:
+      contents: read  # checkout the pull request head
+      pull-requests: write  # post the review; dismiss superseded ones
+    secrets:
+      OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}

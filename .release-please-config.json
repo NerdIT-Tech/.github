@@ -181,6 +181,11 @@
       "initial-version": "0.1.0",
       "separate-pull-requests": false
     },
+    ".github/workflows/reusable-opencode-review.yml": {
+      "component": "reusable-opencode-review",
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
+    },
     ".github/workflows/reusable-scorecard.yml": {
       "component": "reusable-scorecard",
       "initial-version": "0.1.0",
