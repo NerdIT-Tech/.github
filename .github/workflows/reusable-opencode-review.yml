@@ -77,6 +77,8 @@ jobs:
       - name: Write the review agent configuration
         if: inputs.isolate-config
         shell: bash
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: |
           set -euo pipefail
           rm -rf .opencode .claude .cursor
@@ -94,6 +96,13 @@ jobs:
             "mcp": {},
             "plugin": [],
             "instructions": [],
+            "provider": {
+              "opencode": {
+                "options": {
+                  "apiKey": "__OPENCODE_API_KEY__"
+                }
+              }
+            },
             "permission": {
               "*": "deny",
               "read": {
@@ -112,6 +121,8 @@ jobs:
             }
           }
           JSON
+          jq '.provider.opencode.options.apiKey = $k' --arg k "${OPENCODE_API_KEY}" opencode.json > opencode.json.tmp
+          mv opencode.json.tmp opencode.json
           mkdir -p .opencode/agents
           cat >.opencode/agents/pr-review.md <<'MD'
           ---
