@@ -1,0 +1,13 @@
+name: Diag M Full Perms
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/zz-*.yml"
+permissions: {}
+jobs:
+  callM:
+    uses: ./.github/workflows/reusable-zizmor.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
