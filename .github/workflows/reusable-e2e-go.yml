@@ -20,48 +20,32 @@ on:
         type: string
         default: "-tags e2e"
     secrets:
-      # DEPRECATED, no longer read. The e2e job declares the 'e2e-servicenow'
-      # environment and reads SN_INSTANCE, SN_USERNAME and SN_PASSWORD from
-      # there, so that the credentials sit behind the environment's reviewer
-      # gate instead of arriving from the caller.
+      # SUPERSEDED, not removed, and not by anything this file can do. The e2e
+      # job declares the 'e2e-servicenow' environment, and the reuse-workflows
+      # docs are explicit that an environment secret of the same name is the
+      # one used, because on.workflow_call does not support the environment
+      # keyword and a caller therefore cannot supply these through it. The
+      # human setup step is to add secrets named exactly instance, username
+      # and password to the 'e2e-servicenow' environment.
       #
-      # They stay declared, and 'required' drops to false, so that a caller
-      # which still passes them keeps validating and a caller which has already
-      # moved to the environment is not forced to keep supplying secrets that
-      # go unused. Leaving 'required: true' would be a break in all but name.
-      # AUDIT.md rec #5 owns the removal, with the rest of the public API.
+      # They stay declared, and 'required' drops to false, so a caller that
+      # still passes them keeps validating and a caller that has already
+      # moved to the environment is not forced to keep supplying secrets.
+      # Leaving 'required: true' would be a break in all but name. AUDIT.md
+      # rec #5 owns the removal, with the rest of the public API.
       #
-      # The names deliberately do not match the environment secrets. Per the
-      # reuse-workflows docs, an environment secret wins over a caller-passed
-      # secret of the same name; with two distinct namespaces a consumer can
-      # migrate by adding the environment without deleting the old block, and
-      # neither can shadow the other.
+      # An earlier commit on this branch also declared SN_INSTANCE,
+      # SN_USERNAME and SN_PASSWORD here. That was a bypass: it let a caller
+      # supply a value for a secret the environment is meant to own, under a
+      # name nothing else reads. It is gone.
       instance:
-        description: "Unused. Set SN_INSTANCE on the 'e2e-servicenow' environment instead"
+        description: "Superseded: set an 'instance' secret on the 'e2e-servicenow' environment, which takes precedence"
         required: false
       username:
-        description: "Unused. Set SN_USERNAME on the 'e2e-servicenow' environment instead"
+        description: "Superseded: set a 'username' secret on the 'e2e-servicenow' environment, which takes precedence"
         required: false
       password:
-        description: "Unused. Set SN_PASSWORD on the 'e2e-servicenow' environment instead"
-        required: false
-      # Declared so actionlint can type-check the references in the e2e job.
-      # It builds the secrets object from this block alone and has no model
-      # for environments, so without the entries it reports three errors on
-      # secrets that are perfectly valid at runtime.
-      #
-      # Declaring them here does not hand callers a path around the gate: when
-      # the environment exists its values win, per the reuse-workflows docs,
-      # and when it does not exist a caller-supplied value is the same value
-      # that reached the job before this change.
-      SN_INSTANCE:
-        description: "ServiceNow instance. The 'e2e-servicenow' environment's secret of this name takes precedence"
-        required: false
-      SN_USERNAME:
-        description: "ServiceNow user. The 'e2e-servicenow' environment's secret of this name takes precedence"
-        required: false
-      SN_PASSWORD:
-        description: "ServiceNow password. The 'e2e-servicenow' environment's secret of this name takes precedence"
+        description: "Superseded: set a 'password' secret on the 'e2e-servicenow' environment, which takes precedence"
         required: false
 
 permissions: {}
@@ -128,6 +112,53 @@ jobs:
     # steps are in the pull request that introduced this line.
     environment: e2e-servicenow
     steps:
+      # Fail before spending the 45-minute budget on a suite that cannot
+      # authenticate. go test against an unreachable or unauthenticated
+      # instance can skip rather than error, and a nightly that skips to
+      # green is worse than one that fails: it reads as coverage.
+      #
+      # Step-scoped, like the step below, so nothing widens back to job
+      # scope. check-secret observes presence only; the follow-up step
+      # re-reads the same three values at the same scope to name which ones
+      # are missing, because check-secret emits a ::warning:: for only the
+      # first and always exits 0.
+      - name: Check ServiceNow credentials are present
+        id: credentials
+        uses: $/.github/actions/check-secret
+        env:
+          SN_INSTANCE: ${{ secrets.instance }}
+          SN_USERNAME: ${{ secrets.username }}
+          SN_PASSWORD: ${{ secrets.password }}
+        with:
+          secret-names: "SN_INSTANCE,SN_USERNAME,SN_PASSWORD"
+
+      - name: Fail on missing credentials
+        if: steps.credentials.outputs.has-secrets != 'true'
+        env:
+          SN_INSTANCE: ${{ secrets.instance }}
+          SN_USERNAME: ${{ secrets.username }}
+          SN_PASSWORD: ${{ secrets.password }}
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in SN_INSTANCE SN_USERNAME SN_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              missing="${missing:+$missing, }$name"
+            fi
+          done
+          echo "::error::reusable-e2e-go.yml has no usable ServiceNow credentials: unset -- $missing."
+          {
+            echo "### E2E blocked: no ServiceNow credentials"
+            echo ""
+            echo "Unset: \`$missing\`"
+            echo ""
+            echo "They come from the 'e2e-servicenow' environment, as secrets"
+            echo "named instance, username and password. If that environment"
+            echo "does not exist yet this run is un-gated, not empty, and the"
+            echo "suite would have tested nothing while reporting success."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
@@ -142,16 +173,17 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         # Step scope, not job scope. Every process this step spawns inherits
         # these, and the code it compiles is the code in the checked-out tree.
-        # The other three steps only read e2e-output.txt and upload it; they
-        # have no use for a credential. GO_TEST_TIMEOUT is not a secret but
-        # moves with them so that no job-scope env map is left for a secret to
-        # be added back to by inertia.
+        # The other steps only observe presence and read e2e-output.txt;
+        # none of them has a use for the values themselves.
+        # GO_TEST_TIMEOUT is not a secret but moves down too, so that no
+        # job-scope env map is left for a secret to be added back to by
+        # inertia.
         env:
           BUILD_FLAGS: ${{ inputs.build-flags }}
           GO_TEST_TIMEOUT: ${{ inputs.test-timeout }}
-          SN_INSTANCE: ${{ secrets.SN_INSTANCE }}
-          SN_USERNAME: ${{ secrets.SN_USERNAME }}
-          SN_PASSWORD: ${{ secrets.SN_PASSWORD }}
+          SN_INSTANCE: ${{ secrets.instance }}
+          SN_USERNAME: ${{ secrets.username }}
+          SN_PASSWORD: ${{ secrets.password }}
         # pipefail is mandatory: without it the pipeline's exit code comes from
         # tee, and go test failures silently produce a green job.
         run: |
