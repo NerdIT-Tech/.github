@@ -2,5 +2,4 @@ rules:
   unpinned-uses:
     config:
       policies:
-        "NerdIT-Tech/*": ref-pin  # own components: floating major tag is the contract
         "*": hash-pin  # everything else: SHA + `# vX.Y.Z` comment

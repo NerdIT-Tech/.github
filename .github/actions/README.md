@@ -16,12 +16,18 @@ own subdirectory with an `action.yml` at its root.
         go-version: "1.22"
   ```
 
-- **Referencing a sibling action from within this repo**: a composite
-  action's `./`-relative `uses:` resolves against the *caller's* checkout,
-  not against `NerdIT-Tech/.github` — even when the caller is another
-  composite action that lives right next to it in this same repo. Reference
-  siblings the same fully-qualified way an external caller would (e.g.
-  `NerdIT-Tech/.github/.github/actions/terraform-init@terraform-init/v1`),
-  not `./.github/actions/terraform-init`.
+- **Referencing a sibling action from within this repo**: use the
+  self-repository `$/` prefix (e.g. `$/.github/actions/terraform-init`).
+  It resolves to this repo at the exact commit that is running and, unlike
+  `./`, ignores the caller's checkout — so it works from inside a composite
+  action or a reusable workflow. Do not add a version: `$/` must have no
+  `@ref`, and the running commit is the whole point. It needs runner
+  `2.336.0` or newer and works on github.com only, so external callers
+  still need the fully-qualified form above.
+
+  A composite action's `./`-relative `uses:` resolves against the *caller's*
+  checkout, not against `NerdIT-Tech/.github` — even when the caller is
+  another composite action right next to it in this same repo (#36). `$/`
+  replaces that trap; `./` is still wrong here.
 
 See [`../workflows/README.md`](../workflows/README.md) for reusable `workflow_call` workflows.

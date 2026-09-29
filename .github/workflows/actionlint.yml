@@ -18,6 +18,6 @@ concurrency:
 
 jobs:
   actionlint:
-    uses: ./.github/workflows/reusable-actionlint.yml
+    uses: $/.github/workflows/reusable-actionlint.yml
     permissions:
       contents: read  # the reusable's only need: checkout the workflows it lints

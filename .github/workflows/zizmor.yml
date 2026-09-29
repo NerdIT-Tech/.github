@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   zizmor:
-    uses: ./.github/workflows/reusable-zizmor.yml
+    uses: $/.github/workflows/reusable-zizmor.yml
     permissions:
       contents: read  # checkout
       # Required by the callee's zizmor-sarif job; without these the call
