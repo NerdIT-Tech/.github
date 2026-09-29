@@ -1,4 +1,19 @@
-name: E2E Go Tests
+name: E2E Go Tests (deprecated)
+
+# DEPRECATED. Superseded by reusable-bdd-go.yml, which is generic about the
+# suite it runs and the target it authenticates against. This wrapper is
+# kept so existing consumers keep working after they move to a newer tag.
+#
+# It preserves the old Go + ServiceNow defaults and translates the legacy
+# `instance`/`username`/`password` secret names onto the `BDD_*` convention
+# the harness reads. The translation is workflow-side only: a consumer whose
+# *test code* reads SN_INSTANCE, SN_USERNAME, or SN_PASSWORD must be updated
+# to read BDD_INSTANCE, BDD_USERNAME, and BDD_PASSWORD. That part cannot be
+# hidden from behind a wrapper and is called out in the PR description.
+#
+# To migrate: point the `uses:` line at reusable-bdd-go.yml, delete
+# `secrets: inherit`-irrelevant `secrets:` mapping, and rename the four
+# repository secrets to the BDD_* names.
 
 on:
   workflow_call:
@@ -35,52 +50,19 @@ permissions: {}
 jobs:
   e2e:
     name: Live Instance Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
     permissions:
-      contents: read
-    env:
-      GO_TEST_TIMEOUT: ${{ inputs.test-timeout }}
-      SN_INSTANCE: ${{ secrets.instance }}
-      SN_USERNAME: ${{ secrets.username }}
-      SN_PASSWORD: ${{ secrets.password }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: $/.github/actions/setup-go-env
-        with:
-          go-version: ${{ inputs.go-version }}
-          cache: "true"
-          checkout: "false"
-
-      - name: Run E2E suites
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          BUILD_FLAGS: ${{ inputs.build-flags }}
-        # pipefail is mandatory: without it the pipeline's exit code comes from
-        # tee, and go test failures silently produce a green job.
-        run: |
-          set -o pipefail
-          read -r -a BUILD_FLAGS_ARRAY <<< "$BUILD_FLAGS"
-          go test "${BUILD_FLAGS_ARRAY[@]}" ./... -timeout "$GO_TEST_TIMEOUT" -v 2>&1 | tee e2e-output.txt
-
-      - name: Summarize failures
-        if: failure()
-        run: |
-          {
-            echo "### E2E Nightly failed"
-            echo ""
-            echo '```'
-            grep -E "^(=== RUN|--- FAIL|FAIL|ok )" e2e-output.txt | tail -50 || true
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload raw output
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: e2e-output
-          path: ${{ inputs.working-directory }}/e2e-output.txt
-          retention-days: 7
+      contents: read  # checkout, build, and artifact upload
+    uses: $/.github/workflows/reusable-bdd-go.yml
+    with:
+      go-version: ${{ inputs.go-version }}
+      # The legacy build-flags and test-timeout inputs are folded back into
+      # a single command here, since the harness exposes one suite-command
+      # input rather than a driver matrix.
+      suite-command: go test ${{ inputs.build-flags }} ./... -timeout ${{ inputs.test-timeout }} -v
+      working-directory: ${{ inputs.working-directory }}
+      report-pattern: "^(=== RUN|--- FAIL|FAIL|ok )"
+      artifact-name: "e2e-output"
+    secrets:
+      BDD_INSTANCE: ${{ secrets.instance }}
+      BDD_USERNAME: ${{ secrets.username }}
+      BDD_PASSWORD: ${{ secrets.password }}
