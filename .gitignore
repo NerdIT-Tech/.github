@@ -1,0 +1,6 @@
+# Python bytecode and test caches, from the pytest suite in .github/tests/.
+# This repo had no ignore file until it gained a Python test suite; these are
+# build artifacts of running it locally and must never be committed.
+__pycache__/
+*.py[cod]
+.pytest_cache/
