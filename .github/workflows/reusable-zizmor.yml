@@ -4,9 +4,15 @@ on:
   workflow_call:
     inputs:
       version:
+        # 1.30.1 is the floor for the self-repository audit, which flags
+        # `uses: ./` so it gets written as `$/` instead. `./` resolves
+        # against the caller's checkout, not this repo, so it is wrong
+        # inside a reusable workflow or composite action (#36). The
+        # forbidden-uses rule in .github/zizmor.yml covers the other half
+        # (full-name NerdIT-Tech refs) and works on 1.29.0 too.
         description: "zizmor CLI version to install"
         type: string
-        default: "1.29.0"
+        default: "1.30.1"
       online-audits:
         description: "Enable online audits (requires network access)"
         type: boolean
