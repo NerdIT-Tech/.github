@@ -1,0 +1,26 @@
+name: Workflow Security Audit
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - ".github/dependabot.yml"
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions: {}
+
+concurrency:
+  group: zizmor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zizmor:
+    uses: ./.github/workflows/reusable-zizmor.yml
+    permissions:
+      contents: read  # checkout
+      # Required by the callee's zizmor-sarif job; without these the call
+      # fails at startup with zero jobs created.
+      security-events: write  # SARIF upload to code scanning
+      actions: read  # upload-sarif workflow metadata (private repos)
