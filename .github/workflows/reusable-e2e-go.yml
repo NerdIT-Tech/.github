@@ -20,30 +20,113 @@ on:
         type: string
         default: "-tags e2e"
     secrets:
+      # DEPRECATED, no longer read. The e2e job declares the 'e2e-servicenow'
+      # environment and reads SN_INSTANCE, SN_USERNAME and SN_PASSWORD from
+      # there, so that the credentials sit behind the environment's reviewer
+      # gate instead of arriving from the caller.
+      #
+      # They stay declared, and 'required' drops to false, so that a caller
+      # which still passes them keeps validating and a caller which has already
+      # moved to the environment is not forced to keep supplying secrets that
+      # go unused. Leaving 'required: true' would be a break in all but name.
+      # AUDIT.md rec #5 owns the removal, with the rest of the public API.
+      #
+      # The names deliberately do not match the environment secrets. Per the
+      # reuse-workflows docs, an environment secret wins over a caller-passed
+      # secret of the same name; with two distinct namespaces a consumer can
+      # migrate by adding the environment without deleting the old block, and
+      # neither can shadow the other.
       instance:
-        description: "ServiceNow instance to run the E2E suite against"
-        required: true
+        description: "Unused. Set SN_INSTANCE on the 'e2e-servicenow' environment instead"
+        required: false
       username:
-        description: "ServiceNow user with table API access"
-        required: true
+        description: "Unused. Set SN_USERNAME on the 'e2e-servicenow' environment instead"
+        required: false
       password:
-        description: "Password for the ServiceNow user"
-        required: true
+        description: "Unused. Set SN_PASSWORD on the 'e2e-servicenow' environment instead"
+        required: false
+      # Declared so actionlint can type-check the references in the e2e job.
+      # It builds the secrets object from this block alone and has no model
+      # for environments, so without the entries it reports three errors on
+      # secrets that are perfectly valid at runtime.
+      #
+      # Declaring them here does not hand callers a path around the gate: when
+      # the environment exists its values win, per the reuse-workflows docs,
+      # and when it does not exist a caller-supplied value is the same value
+      # that reached the job before this change.
+      SN_INSTANCE:
+        description: "ServiceNow instance. The 'e2e-servicenow' environment's secret of this name takes precedence"
+        required: false
+      SN_USERNAME:
+        description: "ServiceNow user. The 'e2e-servicenow' environment's secret of this name takes precedence"
+        required: false
+      SN_PASSWORD:
+        description: "ServiceNow password. The 'e2e-servicenow' environment's secret of this name takes precedence"
+        required: false
 
 permissions: {}
 
 jobs:
+  # A workflow_call cannot police its own trigger, so the callee has to. This
+  # job exists to turn an unapproved event into a failed run rather than a
+  # skipped one: a skip is indistinguishable from a pass to a required status
+  # check, which is the same bug class as the credential exposure below.
+  #
+  # github.event_name keeps the *caller's* event across the call boundary, so
+  # a consumer wiring this to pull_request is caught as 'pull_request' here.
+  guard:
+    name: E2E Trust Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - name: Check trigger event
+        id: check
+        # Via env, not inline ${{ }}: the expansion happens before the script
+        # reaches disk, so an interpolated value could splice in commands.
+        # Same reasoning as the env-vars step in reusable-test-go.
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            # schedule is what the summary below is written for.
+            # workflow_dispatch is a human with write access asking for a
+            # re-run, which is the same trust decision as a cron entry.
+            schedule|workflow_dispatch)
+              echo "allowed=true" >> "$GITHUB_OUTPUT"
+              ;;
+            # push is refused deliberately, not overlooked: a merged pull
+            # request reaches this suite through 'schedule' within the hour
+            # anyway, so allowlisting 'push' would only widen the window in
+            # which any commit landing on the default branch compiles and runs
+            # with the credentials.
+            *)
+              echo "allowed=false" >> "$GITHUB_OUTPUT"
+              echo "::error::reusable-e2e-go.yml refused the '$EVENT_NAME' event. It checks out the calling ref and runs that code against a live ServiceNow instance with production credentials, so it accepts only 'schedule' and 'workflow_dispatch'."
+              exit 1
+              ;;
+          esac
+
   e2e:
     name: Live Instance Tests
+    needs: guard
+    # Belt and braces. 'needs' already skips this job when the guard fails;
+    # the explicit condition also holds the line if the guard is ever made
+    # non-fatal, which is the one edit that would reopen this hole.
+    if: needs.guard.outputs.allowed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
       contents: read
-    env:
-      GO_TEST_TIMEOUT: ${{ inputs.test-timeout }}
-      SN_INSTANCE: ${{ secrets.instance }}
-      SN_USERNAME: ${{ secrets.username }}
-      SN_PASSWORD: ${{ secrets.password }}
+    # This line is only a gate once a human has created the 'e2e-servicenow'
+    # environment and given it required reviewers. GitHub creates a bare
+    # environment with no reviewers on first reference, so without that
+    # settings change this reads as protected and protects nothing. The manual
+    # steps are in the pull request that introduced this line.
+    environment: e2e-servicenow
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -57,8 +140,18 @@ jobs:
 
       - name: Run E2E suites
         working-directory: ${{ inputs.working-directory }}
+        # Step scope, not job scope. Every process this step spawns inherits
+        # these, and the code it compiles is the code in the checked-out tree.
+        # The other three steps only read e2e-output.txt and upload it; they
+        # have no use for a credential. GO_TEST_TIMEOUT is not a secret but
+        # moves with them so that no job-scope env map is left for a secret to
+        # be added back to by inertia.
         env:
           BUILD_FLAGS: ${{ inputs.build-flags }}
+          GO_TEST_TIMEOUT: ${{ inputs.test-timeout }}
+          SN_INSTANCE: ${{ secrets.SN_INSTANCE }}
+          SN_USERNAME: ${{ secrets.SN_USERNAME }}
+          SN_PASSWORD: ${{ secrets.SN_PASSWORD }}
         # pipefail is mandatory: without it the pipeline's exit code comes from
         # tee, and go test failures silently produce a green job.
         run: |
