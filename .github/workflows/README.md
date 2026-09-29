@@ -42,12 +42,47 @@ NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-
 
   | Reusable workflow | Caller must grant |
   |---|---|
+  | `reusable-actionlint.yml` | `contents: read` |
+  | `reusable-build-go.yml` | `contents: read` |
+  | `reusable-check-go-deps.yml` | `contents: read` |
+  | `reusable-check-license.yml` | `contents: read` |
+  | `reusable-check-snippets.yml` | `contents: read` |
   | `reusable-codeql.yml` | `contents: read`, `actions: read`, `security-events: write` |
-  | `reusable-scorecard.yml` | `contents: read`, `security-events: write`, `id-token: write` |
-  | `reusable-zizmor.yml` | `contents: read`; plus `security-events: write`, `actions: read` when `advanced-security: true` |
-  | `reusable-test-go.yml` | `contents: read`, `pull-requests: write` |
+  | `reusable-docs-build.yml` | `contents: read` |
+  | `reusable-docs-gate.yml` | `contents: read` |
+  | `reusable-e2e-go.yml` | `contents: read` |
+  | `reusable-govulncheck.yml` | `contents: read` |
+  | `reusable-lint-go.yml` | `contents: read` |
   | `reusable-lint-pr-title.yml` | `contents: read`, `pull-requests: write` |
+  | `reusable-scorecard.yml` | `contents: read`, `security-events: write`, `id-token: write` |
+  | `reusable-semantic-pr-title.yml` | `contents: read`, `pull-requests: write` |
   | `reusable-stale-issues.yml` | `issues: write` |
   | `reusable-sync-issue-labels.yml` | `issues: write` |
+  | `reusable-test-go.yml` | `contents: read`, `pull-requests: write` |
+  | `reusable-vale-lint.yml` | `contents: read` |
+  | `reusable-workflow-tests.yml` | `contents: read` |
+  | `reusable-yaml-lint.yml` | `contents: read` |
+  | `reusable-zizmor.yml` | `contents: read`; plus `security-events: write`, `actions: read` when `advanced-security: true` |
+
+  This table is enforced, not aspirational: `test_references.py` parses it
+  and fails if a workflow requests a scope the table omits, or if the table
+  names a workflow that no longer needs a grant. Regenerate a row from the
+  job's own `permissions:` rather than hand-editing.
 
 See [`../actions/README.md`](../actions/README.md) for composite (reusable) actions.
+
+## Tests
+
+`.github/tests/` holds the contract tests for every reusable workflow and
+composite action in this repo. They parse the YAML rather than grepping it
+and cover the conventions above: the `$/` reference rules, hash pinning,
+least-privilege permissions, composite `shell:` requirements, the
+caller-grants-callee contract, and this table.
+
+```sh
+pip install pytest pyyaml
+python -m pytest .github/tests
+```
+
+They run in CI via [`workflow-tests.yml`](workflow-tests.yml), which calls
+[`reusable-workflow-tests.yml`](reusable-workflow-tests.yml).
