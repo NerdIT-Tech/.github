@@ -4,6 +4,23 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      codeql:
+        patterns:
+          - "github/codeql-action/*"
+      checkout:
+        patterns:
+          - "actions/checkout"
+          - "actions/setup-*"
+      terraform:
+        patterns:
+          - "hashicorp/*"
+          - "terraform-linters/*"
+          - "aquasecurity/trivy-action"
     commit-message:
       prefix: "chore"
     labels:

@@ -19,5 +19,35 @@ NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-
       with:
         go-version: "1.22"
   ```
+- **Permissions**: set `permissions: {}` at the workflow level, then grant the
+  specific permissions each job needs. GitHub downgrades a caller's token at
+  every step of a call chain, so a reusable workflow can't grant itself
+  permissions the caller didn't provide. A missing grant fails inside the called
+  workflow, not at the call site, so grant exactly what the table below lists.
+
+  The caller is the only place that can widen the token, so keep the grant
+  narrow and annotated:
+
+  ```yaml
+  jobs:
+    codeql:
+      uses: NerdIT-Tech/.github/.github/workflows/reusable-codeql.yml@v1
+      permissions:
+        actions: read         # CodeQL workflow metadata (private repo)
+        contents: read        # checkout
+        security-events: write  # SARIF upload
+  ```
+
+  The reusable workflows that need a caller grant are:
+
+  | Reusable workflow | Caller must grant |
+  |---|---|
+  | `reusable-codeql.yml` | `contents: read`, `actions: read`, `security-events: write` |
+  | `reusable-scorecard.yml` | `contents: read`, `security-events: write`, `id-token: write` |
+  | `reusable-zizmor.yml` | `contents: read`; plus `security-events: write`, `actions: read` when `advanced-security: true` |
+  | `reusable-test-go.yml` | `contents: read`, `pull-requests: write` |
+  | `reusable-lint-pr-title.yml` | `contents: read`, `pull-requests: write` |
+  | `reusable-stale-issues.yml` | `issues: write` |
+  | `reusable-sync-issue-labels.yml` | `issues: write` |
 
 See [`../actions/README.md`](../actions/README.md) for composite (reusable) actions.

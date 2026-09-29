@@ -1,7 +1,16 @@
 name: Semantic PR Title
 
+# This workflow uses `pull_request`, not `pull_request_target`. The reusable
+# reads the pull request and posts a sticky lint comment. It never checks out
+# the pull request head and never runs code from it, so it does not need the
+# privileged base-repository context that `pull_request_target` grants.
+#
+# The tradeoff: GitHub downgrades `GITHUB_TOKEN` to read-only on pull requests
+# from forks, so the comment write is rejected there. The check still runs and
+# still blocks the merge; it reports the invalid title in the run log instead of
+# in a pull request comment.
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - edited
@@ -9,6 +18,8 @@ on:
       - synchronize
       - labeled
       - unlabeled
+
+permissions: {}
 
 concurrency:
   group: semantic-pr-title-${{ github.event.pull_request.number }}
@@ -20,5 +31,4 @@ jobs:
     uses: ./.github/workflows/reusable-semantic-pr-title.yml
     permissions:
       contents: read
-      pull-requests: write
-      statuses: write
+      pull-requests: write  # sticky PR title lint comment: create on failure, delete on success
