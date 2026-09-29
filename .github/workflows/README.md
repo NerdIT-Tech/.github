@@ -43,6 +43,7 @@ NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-
   | Reusable workflow | Caller must grant |
   |---|---|
   | `reusable-actionlint.yml` | `contents: read` |
+  | `reusable-bdd-go.yml` | `contents: read` |
   | `reusable-build-go.yml` | `contents: read` |
   | `reusable-check-go-deps.yml` | `contents: read` |
   | `reusable-check-license.yml` | `contents: read` |
@@ -68,6 +69,45 @@ NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-
   and fails if a workflow requests a scope the table omits, or if the table
   names a workflow that no longer needs a grant. Regenerate a row from the
   job's own `permissions:` rather than hand-editing.
+
+## Credentials in a reusable workflow
+
+A reusable workflow cannot read an arbitrary secret name: it references the
+`secrets` context by name, so the names have to be fixed by convention.
+[`reusable-bdd-go.yml`](reusable-bdd-go.yml) fixes them at `BDD_INSTANCE`,
+`BDD_USERNAME`, `BDD_PASSWORD`, and `BDD_TOKEN`. Define those four in the
+calling repository and pass them with `secrets: inherit`:
+
+```yaml
+jobs:
+  bdd:
+    uses: NerdIT-Tech/.github/.github/workflows/reusable-bdd-go.yml@v1
+    permissions:
+      contents: read  # checkout, build, artifact upload
+    with:
+      suite-command: go test -tags e2e ./... -v
+    secrets: inherit
+```
+
+`BDD_TOKEN` is an alternative to `BDD_USERNAME`/`BDD_PASSWORD`; the run fails
+loudly and names the missing secret if neither is set. The four are declared
+`required: false` because `secrets: inherit` supplies them implicitly, and
+because a secret read through the `secrets` context keeps GitHub's log
+masking — a secret routed through a step output does not.
+
+Two rules the harness holds, both enforced by
+[`test_credential_scoping.py`](../tests/test_credential_scoping.py):
+
+- **Credentials are step-scoped and injected after the build.** Checkout,
+  module fetch, and compile all run third-party code that has no reason to
+  hold a live credential. No job-scope or workflow-scope `env:` map may carry
+  a secret, and no secret is interpolated into a `run:` block.
+- **The trigger is allowlisted by a `guard` job** that fails with `exit 1` on
+  anything other than `schedule` and `workflow_dispatch`. A skipped job is
+  indistinguishable from a passing one in a required-check context.
+
+Neither rule needs a GitHub Environment, so neither depends on anyone
+editing repository settings before it takes effect.
 
 See [`../actions/README.md`](../actions/README.md) for composite (reusable) actions.
 

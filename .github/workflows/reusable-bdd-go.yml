@@ -1,0 +1,229 @@
+name: BDD Go Tests
+
+# Behavior-driven test harness for Go suites. It is deliberately generic
+# about what it runs (`suite-command`) and what it authenticates against
+# (`BDD_*` secret names), so the same code path serves a ServiceNow live
+# suite, a godog feature suite, or a tagged `go test -run` subset.
+#
+# SECURITY MODEL -- two controls, both in this file, neither in repository
+# settings. There is no `environment:` key anywhere in this workflow, so
+# nothing has to be configured by a human before the control is live.
+#
+#   1. The `guard` job allowlists the trigger events and fails the run on
+#      anything else. A reusable workflow cannot choose its own trigger,
+#      so it has to defend itself.
+#   2. Credentials exist at step scope on the suite step alone, injected
+#      after the build. Checkout, module fetch, and compile all run
+#      dependency code that has no business holding a live credential.
+#
+# CREDENTIAL CONTRACT -- the four names are fixed by convention because a
+# reusable workflow can only read a secret by name, which means callers
+# must use `secrets: inherit` and define these four in their repository:
+#
+#   BDD_INSTANCE  required, target to authenticate against
+#   BDD_TOKEN     alternative to username/password
+#   BDD_USERNAME  required unless BDD_TOKEN is set
+#   BDD_PASSWORD  required unless BDD_TOKEN is set
+#
+# All four are declared `required: false` so `secrets: inherit` and
+# actionlint both accept them, and so they keep GitHub's log masking; see
+# the PR description for why the declaration is not redundant.
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: "Go version to use (e.g. stable, oldstable, 1.22.x)"
+        type: string
+        default: "stable"
+      suite-command:
+        description: >-
+          Command that runs the behavior suite, in any Go BDD driver or
+          plain `go test`. Quoted and run through `bash -c`, so tags and
+          package patterns work: "go test -tags e2e ./... -v" or
+          "godog features/". $BDD_* holds the credentials.
+        type: string
+        default: "go test ./... -v -timeout 40m"
+      working-directory:
+        description: "Directory containing the test modules and the go.mod to build"
+        type: string
+        default: "."
+      report-pattern:
+        description: "Extended regex for the lines the failure summary extracts from the suite output"
+        type: string
+        default: "^(=== RUN|--- FAIL|FAIL|ok )"
+      artifact-name:
+        description: "Name of the uploaded raw-output artifact"
+        type: string
+        default: "bdd-output"
+    secrets:
+      BDD_INSTANCE:
+        description: "Target the suite authenticates against (e.g. an instance host, a base URL, an API endpoint)"
+        required: false
+      BDD_TOKEN:
+        description: "Bearer or API token for the target; an alternative to BDD_USERNAME and BDD_PASSWORD"
+        required: false
+      BDD_USERNAME:
+        description: "Username for the target; required unless BDD_TOKEN is set"
+        required: false
+      BDD_PASSWORD:
+        description: "Password for the target; required unless BDD_USERNAME and BDD_TOKEN are both absent"
+        required: false
+
+permissions: {}
+
+jobs:
+  guard:
+    name: Trust Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - id: check
+        env:
+          # github.event_name inside a called reusable workflow is the
+          # *caller's* event, which is what makes this allowlist meaningful
+          # across the call boundary.
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            schedule|workflow_dispatch)
+              echo "allowed=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              # Fail loudly rather than skip. A skipped job is
+              # indistinguishable from a passing one in a required-check
+              # context, which is the same defect class as a credential
+              # leaking into a build step: a control that cannot be seen
+              # to have fired is not a control.
+              echo "allowed=false" >> "$GITHUB_OUTPUT"
+              echo "::error::reusable-bdd-go refuses the '${EVENT_NAME}' event. It is a trusted trigger only: 'schedule' and 'workflow_dispatch'. A 'pull_request' caller would hand the credential to code the pull request author controls."
+              exit 1
+              ;;
+          esac
+
+  bdd:
+    name: Behavior Suite
+    needs: guard
+    # Re-checked here as well as in the guard, so the allowlist still holds
+    # if the guard is ever relaxed into a skip.
+    if: needs.guard.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read  # checkout, build, and artifact upload
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: $/.github/actions/setup-go-env
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: "true"
+          # checkout: "false" because the order below is the security
+          # property: the checkout must land before the toolchain and the
+          # build, and the credentials must land after them.
+          checkout: "false"
+
+      # No secret is in scope for checkout, module fetch, or compile. Each
+      # of those runs third-party code (module downloads, `go generate`
+      # directives, cgo toolchain invocations) that does not need a
+      # credential to do its job.
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          set -euo pipefail
+          go mod download
+          go build ./...
+
+      - name: Check for a target
+        id: target
+        uses: $/.github/actions/check-secret
+        env:
+          BDD_INSTANCE: ${{ secrets.BDD_INSTANCE }}
+        with:
+          secret-names: "BDD_INSTANCE"
+
+      - name: Check for a token
+        id: token
+        uses: $/.github/actions/check-secret
+        env:
+          BDD_TOKEN: ${{ secrets.BDD_TOKEN }}
+        with:
+          secret-names: "BDD_TOKEN"
+
+      - name: Check for a username and password
+        id: userpass
+        uses: $/.github/actions/check-secret
+        env:
+          BDD_USERNAME: ${{ secrets.BDD_USERNAME }}
+          BDD_PASSWORD: ${{ secrets.BDD_PASSWORD }}
+        with:
+          secret-names: "BDD_USERNAME,BDD_PASSWORD"
+
+      # check-secret only emits ::warning:: and always exits 0, so the
+      # booleans are converted into a hard failure here. Fail closed: a
+      # suite that runs with no credential fails later and less clearly
+      # than it fails here, and the caller learns which name to define.
+      - name: Require credentials
+        env:
+          HAS_TARGET: ${{ steps.target.outputs.has-secrets }}
+          HAS_TOKEN: ${{ steps.token.outputs.has-secrets }}
+          HAS_USERPASS: ${{ steps.userpass.outputs.has-secrets }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [ "$HAS_TARGET" = "true" ] || missing+=("BDD_INSTANCE")
+          if [ "$HAS_TOKEN" != "true" ] && [ "$HAS_USERPASS" != "true" ]; then
+            missing+=("BDD_TOKEN (or BDD_USERNAME and BDD_PASSWORD)")
+          fi
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::BDD credentials missing: ${missing[*]}. Define them in the calling repository and pass them with 'secrets: inherit'."
+            exit 1
+          fi
+
+      # The only step in the job that sees a credential, and it sees them
+      # at step scope. Step `env:`, never a job-scope `env:` map, and never
+      # `${{ secrets.* }}` inside the script body: Actions expands the
+      # template before bash reads the file, so an inline secret would be
+      # written to disk in plaintext and would also land in the log.
+      - name: Run behavior suite
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          BDD_INSTANCE: ${{ secrets.BDD_INSTANCE }}
+          BDD_USERNAME: ${{ secrets.BDD_USERNAME }}
+          BDD_PASSWORD: ${{ secrets.BDD_PASSWORD }}
+          BDD_TOKEN: ${{ secrets.BDD_TOKEN }}
+          SUITE_COMMAND: ${{ inputs.suite-command }}
+        # pipefail is mandatory: without it the pipeline's exit code comes
+        # from tee, and a failing suite silently produces a green job.
+        run: |
+          set -o pipefail
+          bash -euo pipefail -c "$SUITE_COMMAND" 2>&1 | tee bdd-output.txt
+
+      - name: Summarize failures
+        if: failure()
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          REPORT_PATTERN: ${{ inputs.report-pattern }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Behavior suite failed"
+            echo ""
+            echo '```'
+            grep -E "$REPORT_PATTERN" bdd-output.txt | tail -50 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload raw output
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.working-directory }}/bdd-output.txt
+          retention-days: 7

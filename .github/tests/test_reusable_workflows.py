@@ -91,8 +91,18 @@ class TestReusableWorkflow:
                 )
 
     def test_every_job_has_a_timeout(self):
-        """A hung reusable workflow burns a runner until the org limit."""
+        """A hung reusable workflow burns a runner until the org limit.
+
+        A job that calls another reusable workflow is exempt: GitHub rejects
+        `timeout-minutes` on the `uses:` form (actionlint reports "when a
+        reusable workflow is called with 'uses', 'timeout-minutes' is not
+        available", and the docs list only name, uses, with, secrets, needs,
+        if, and permissions). Such a job delegates every step to the callee,
+        so the bound is the callee's own per-job timeout.
+        """
         for name, job in (self.doc.get("jobs") or {}).items():
+            if isinstance(job.get("uses"), str):
+                continue
             assert job.get("timeout-minutes"), (
                 f"{self.rel}: job {name!r} has no 'timeout-minutes'"
             )
