@@ -5,13 +5,22 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
+
+# release-please's release PRs and tag moves must not be interleaved: two
+# concurrent runs would race on the same component tags. Cancelling is off
+# because a half-finished release run leaves the repo mid-bump.
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release-please:
+    name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # release-please opens the release commit, tag, and GitHub release
+      pull-requests: write  # release-please opens the release PR and labels it
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
         id: release
@@ -37,17 +46,26 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         if: ${{ steps.release.outputs.paths_released != '[]' }}
         with:
-          # Credentials stay on purpose: the tag move below pushes to origin.
           fetch-depth: 0
+          # The tag move below pushes, but it authenticates per-push with an
+          # explicit extraheader instead of a credential left behind in
+          # .git/config for every later step in the job to pick up.
+          persist-credentials: false
 
       - name: Move floating major version tags
         if: ${{ steps.release.outputs.paths_released != '[]' }}
         env:
+          GH_TOKEN: ${{ github.token }}
           PATHS_RELEASED: ${{ steps.release.outputs.paths_released }}
           RELEASE_OUTPUTS: ${{ toJson(steps.release.outputs) }}
         run: |
+          set -o pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Authenticate the single push explicitly rather than leaving a
+          # credential in .git/config (persist-credentials: false above).
+          git config --local "http.https://github.com/.extraheader" \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           mapfile -t RELEASED_PATHS < <(jq -r '.[]' <<<"$PATHS_RELEASED")
           for path in "${RELEASED_PATHS[@]}"; do
             key="${path}--tag_name"
