@@ -10,6 +10,8 @@ on:
       - "**.yml"
       - "**.yaml"
 
+permissions: {}
+
 concurrency:
   group: yaml-lint-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -18,6 +20,6 @@ jobs:
   lint-yaml:
     uses: ./.github/workflows/reusable-yaml-lint.yml
     permissions:
-      contents: read
+      contents: read  # the reusable's only need: checkout the YAML it lints
     with:
       config_file: .yamllint.yml

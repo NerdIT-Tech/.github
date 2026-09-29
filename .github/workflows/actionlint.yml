@@ -10,6 +10,8 @@ on:
       - ".github/workflows/**"
       - ".github/actions/**"
 
+permissions: {}
+
 concurrency:
   group: actionlint-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -18,4 +20,4 @@ jobs:
   actionlint:
     uses: ./.github/workflows/reusable-actionlint.yml
     permissions:
-      contents: read
+      contents: read  # the reusable's only need: checkout the workflows it lints
