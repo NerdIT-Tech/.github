@@ -60,14 +60,15 @@ jobs:
       # statuses: write is intentionally absent. The action only writes a commit
       # status when its `wip` input is set, and this workflow does not set it.
     steps:
-      # Reference the composite action by its full NerdIT-Tech/.github path and
-      # floating major tag. A reusable workflow's ./-relative `uses:` resolves
-      # against the CALLER's checkout, not this repo, so `./.github/actions/
+      # Reference the composite action with the self-repository `$/` prefix.
+      # A reusable workflow's ./-relative `uses:` resolves against the CALLER's
+      # checkout, not this repo, so `./.github/actions/
       # semantic-pull-request` breaks in every consumer (e.g. the failed 'Lint
-      # PR title' check in devcontainer-features). Full path + floating tag
-      # matches how the terraform actions reference sibling actions. The action
-      # itself only calls remote actions, so no actions/checkout is required.
-      - uses: NerdIT-Tech/.github/.github/actions/semantic-pull-request@semantic-pull-request/v1
+      # PR title' check in devcontainer-features). `$/` targets this repo at
+      # the running commit and ignores the caller's checkout, so it works from
+      # inside a reusable workflow. The action itself only calls remote
+      # actions, so no actions/checkout is required.
+      - uses: $/.github/actions/semantic-pull-request
         with:
           types: ${{ inputs.types }}
           requireScope: ${{ inputs.requireScope }}

@@ -1,0 +1,34 @@
+name: Workflow Contract Tests
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - ".github/tests/**"
+      - ".github/zizmor.yml"
+      - ".github/actionlint.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - ".github/tests/**"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: workflow-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    uses: $/.github/workflows/reusable-workflow-tests.yml
+    permissions:
+      contents: read  # the reusable's only need: checkout the workflows it asserts on

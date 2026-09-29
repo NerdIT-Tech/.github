@@ -1,6 +1,19 @@
 rules:
+  forbidden-uses:
+    config:
+      # Nothing inside this repo may reference NerdIT-Tech/.github by full
+      # name. `$/` resolves to the running commit, so it is both correct and
+      # inherently version-consistent; a full-name ref reintroduces the
+      # desync where a caller pins one component and loads another. This is
+      # the regression guard for the rec #1 migration -- the "NerdIT-Tech/*":
+      # ref-pin exemption it replaced permitted exactly this drift.
+      #
+      # This audit only matches repository `uses:` clauses, so it cannot see
+      # `./`. That half of the guard is zizmor's self-repository audit, which
+      # needs 1.30.1 (see reusable-zizmor.yml).
+      deny:
+        - NerdIT-Tech/*
   unpinned-uses:
     config:
       policies:
-        "NerdIT-Tech/*": ref-pin  # own components: floating major tag is the contract
         "*": hash-pin  # everything else: SHA + `# vX.Y.Z` comment
