@@ -18,6 +18,13 @@ jobs:
   release-please:
     name: Release
     runs-on: ubuntu-latest
+    # The only entrypoint workflow with a runs-on: job, and the only one
+    # without a bound. Its concurrency group deliberately sets
+    # cancel-in-progress: false, so a hang here holds the release lock for the
+    # 360-minute default rather than being cancelled, and every later release
+    # run queues behind it. 15 minutes is far above a normal release and well
+    # below the lock-hold time it replaces.
+    timeout-minutes: 15
     permissions:
       contents: write  # release-please opens the release commit, tag, and GitHub release
       pull-requests: write  # release-please opens the release PR and labels it
