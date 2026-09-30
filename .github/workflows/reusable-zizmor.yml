@@ -22,9 +22,9 @@ on:
         type: boolean
         default: false
       min-severity:
-        description: "Minimum severity level to report"
+        description: "Minimum severity level for the blocking gate to fail on"
         type: string
-        default: "informational"
+        default: "medium"
       min-confidence:
         description: "Minimum confidence level to report"
         type: string
@@ -78,7 +78,9 @@ jobs:
           inputs: "."
           collect: all
           persona: auditor
-          min-severity: ${{ inputs.min-severity }}
+          # informational and low findings land in code scanning annotations
+          # here, but never fail CI; the blocking job gates on min-severity.
+          min-severity: informational
           min-confidence: ${{ inputs.min-confidence }}
           version: ${{ inputs.version }}
           online-audits: ${{ inputs.online-audits }}

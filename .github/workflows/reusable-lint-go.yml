@@ -47,4 +47,3 @@ jobs:
           version: ${{ inputs.golangci-lint-version }}
           working-directory: ${{ inputs.working-directory }}
           skip-cache: false
-          args: --timeout=5m
