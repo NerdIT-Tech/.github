@@ -67,7 +67,7 @@ on:
         description: "Username for the target; required unless BDD_TOKEN is set"
         required: false
       BDD_PASSWORD:
-        description: "Password for the target; required unless BDD_USERNAME and BDD_TOKEN are both absent"
+        description: "Password for the target; required unless BDD_TOKEN is set"
         required: false
 
 permissions: {}
