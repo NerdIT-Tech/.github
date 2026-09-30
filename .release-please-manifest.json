@@ -8,7 +8,7 @@
   ".github/actions/terraform-plan": "1.0.1",
   ".github/actions/terraform-release-lock": "1.0.1",
   ".github/actions/terraform-validate": "1.0.0",
-  ".github/actions/tflint": "1.0.0",
+  ".github/actions/tflint": "1.0.1",
   ".github/actions/check-go-deps": "0.1.0",
   ".github/actions/check-secret": "0.1.0",
   ".github/actions/check-snippet-regions": "0.1.0",
