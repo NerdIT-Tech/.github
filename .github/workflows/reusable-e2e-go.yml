@@ -34,6 +34,10 @@ on:
         description: "Additional go test flags (e.g. '-tags e2e')"
         type: string
         default: "-tags e2e"
+      failure-summary-title:
+        description: "Heading to print in the step summary when tests fail"
+        type: string
+        default: "### E2E Nightly failed"
     secrets:
       instance:
         description: "ServiceNow instance to run the E2E suite against"
@@ -62,6 +66,9 @@ jobs:
       working-directory: ${{ inputs.working-directory }}
       report-pattern: "^(=== RUN|--- FAIL|FAIL|ok )"
       artifact-name: "e2e-output"
+      # Threaded through from #150 rather than dropped: the input is
+      # caller-controlled, so the harness reads it from the environment.
+      summary-title: ${{ inputs.failure-summary-title }}
     secrets:
       BDD_INSTANCE: ${{ secrets.instance }}
       BDD_USERNAME: ${{ secrets.username }}

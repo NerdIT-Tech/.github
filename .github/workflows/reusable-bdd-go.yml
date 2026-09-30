@@ -56,6 +56,10 @@ on:
         description: "Name of the uploaded raw-output artifact"
         type: string
         default: "bdd-output"
+      summary-title:
+        description: "Heading to print in the step summary when the suite fails"
+        type: string
+        default: "### Behavior suite failed"
     secrets:
       BDD_INSTANCE:
         description: "Target the suite authenticates against (e.g. an instance host, a base URL, an API endpoint)"
@@ -210,10 +214,15 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         env:
           REPORT_PATTERN: ${{ inputs.report-pattern }}
+          # Via the environment, not interpolated into the script: a caller
+          # controls this string, and `${{ }}` in a `run:` block is a shell
+          # injection (audit rec #1, and #150 did the same for the old
+          # workflow this harness replaces).
+          SUMMARY_TITLE: ${{ inputs.summary-title }}
         run: |
           set -euo pipefail
           {
-            echo "### Behavior suite failed"
+            echo "$SUMMARY_TITLE"
             echo ""
             echo '```'
             grep -E "$REPORT_PATTERN" bdd-output.txt | tail -50 || true
