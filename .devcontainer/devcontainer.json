@@ -1,0 +1,14 @@
+{
+  "name": "NerdIT .Github",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/nerdit-tech/devcontainer-features/opencode:0": {},
+    "ghcr.io/nerdit-tech/devcontainer-features/opencode-data:0": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/guiyomh/features/just:0": {}
+  },
+  "containerUser": "vscode"
+}

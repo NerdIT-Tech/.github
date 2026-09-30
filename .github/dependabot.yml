@@ -7,7 +7,7 @@ updates:
       day: "monday"
     cooldown:
       default-days: 7
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 15
     groups:
       codeql:
         patterns:
@@ -26,3 +26,17 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+  # The devcontainer features were pinned in a lock file that was on disk but
+  # untracked, so nothing updated them. Committed here so this ecosystem has a
+  # manifest to read.
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "devcontainers"
