@@ -1,3 +1,5 @@
+# Release component: reusable-semantic-pr-title
+# Pin from another repo as reusable-semantic-pr-title.yml@reusable-semantic-pr-title/v0.
 name: Semantic PR Title
 
 on:
@@ -54,7 +56,7 @@ jobs:
     permissions:
       # The action reads the current title through pulls.get, which needs
       # pull-requests: read, implied by write. contents: read is kept for
-      # parity with reusable-lint-pr-title.yml and the documented contract.
+      # parity with reusable-lint-go.yml and the documented contract.
       contents: read
       pull-requests: write  # sticky PR title lint comment: create on failure, delete on success
       # statuses: write is intentionally absent. The action only writes a commit

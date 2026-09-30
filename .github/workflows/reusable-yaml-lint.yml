@@ -1,3 +1,5 @@
+# Release component: reusable-yaml-lint
+# Pin from another repo as reusable-yaml-lint.yml@reusable-yaml-lint/v0.
 name: YAML Lint
 
 on:
