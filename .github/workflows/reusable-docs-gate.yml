@@ -1,5 +1,15 @@
 name: Docs Quality Gate
 
+# This workflow composes the two checks it used to inline as hand-maintained
+# copies: `reusable-vale-lint.yml` and `reusable-check-snippets.yml`. Both jobs
+# were byte-identical forks, so a fix to either had to be applied twice and
+# would silently diverge on the next edit. The copies also hardcoded two Vale
+# inputs, so a caller of this workflow could not make Vale non-blocking while a
+# caller of `reusable-vale-lint` could.
+#
+# The two prefixed inputs are the fix for that: `vale-fail-on-error` and
+# `vale-separator` are now caller-controlled, matching the `vale-` prefix the
+# other Vale inputs here already use.
 on:
   workflow_call:
     inputs:
@@ -15,6 +25,14 @@ on:
         description: "Vale CLI version"
         type: string
         default: "3.18.0"
+      vale-separator:
+        description: "Separator between Vale file paths"
+        type: string
+        default: ","
+      vale-fail-on-error:
+        description: "Fail this workflow on Vale lint errors"
+        type: boolean
+        default: true
       snippets-path:
         description: "Path to the Go snippets directory to vet"
         type: string
@@ -37,45 +55,27 @@ permissions: {}
 jobs:
   vale:
     name: Vale Lint (full site)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # No `timeout-minutes` here: GitHub rejects it on a job that calls a
+    # reusable workflow, so the bound is each callee's own job timeout
+    # (10 minutes for both). A caller that needs a tighter overall bound gets
+    # it by calling the two workflows directly instead of through this gate.
+    uses: $/.github/workflows/reusable-vale-lint.yml
     permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Vale Linter
-        uses: errata-ai/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff  # v3.0.0
-        with:
-          fail_on_error: true
-          files: ${{ inputs.vale-files }}
-          separator: ","
-          level: ${{ inputs.vale-level }}
-          version: ${{ inputs.vale-version }}
+      contents: read  # checkout and Vale lint
+    with:
+      files: ${{ inputs.vale-files }}
+      level: ${{ inputs.vale-level }}
+      vale-version: ${{ inputs.vale-version }}
+      separator: ${{ inputs.vale-separator }}
+      fail-on-error: ${{ inputs.vale-fail-on-error }}
 
   snippets:
     name: Check Doc Snippets
     if: ${{ inputs.check-snippets }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    uses: $/.github/workflows/reusable-check-snippets.yml
     permissions:
       contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Vet Go snippets
-        uses: $/.github/actions/vet-go-snippets
-        with:
-          snippets-path: ${{ inputs.snippets-path }}
-
-      - name: Check snippet regions
-        uses: $/.github/actions/check-snippet-regions
-        with:
-          snippets-dir: ${{ inputs.snippets-dir }}
-          docs-dir: ${{ inputs.docs-dir }}
+    with:
+      snippets-path: ${{ inputs.snippets-path }}
+      snippets-dir: ${{ inputs.snippets-dir }}
+      docs-dir: ${{ inputs.docs-dir }}

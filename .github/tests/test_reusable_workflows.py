@@ -91,8 +91,32 @@ class TestReusableWorkflow:
                 )
 
     def test_every_job_has_a_timeout(self):
-        """A hung reusable workflow burns a runner until the org limit."""
+        """A hung reusable workflow burns a runner until the org limit.
+
+        A job that calls a reusable workflow cannot set `timeout-minutes`;
+        GitHub rejects the key on the `uses:` form and actionlint enforces it.
+        The bound then lives in the callee, so this resolves through the call
+        and asserts it there instead of waving the job through. Composition
+        stays bounded rather than becoming a hole in the contract.
+        """
         for name, job in (self.doc.get("jobs") or {}).items():
+            callee = job.get("uses")
+            if isinstance(callee, str) and callee.startswith("$/"):
+                target = REPO_ROOT / callee.removeprefix("$/")
+                assert target.is_file(), (
+                    f"{self.rel}: job {name!r} calls {callee}, which does not exist"
+                )
+                called = load_yaml(target) or {}
+                called_jobs = called.get("jobs") or {}
+                assert called_jobs, (
+                    f"{self.rel}: job {name!r} calls {callee}, which has no jobs"
+                )
+                for called_name, called_job in called_jobs.items():
+                    assert called_job.get("timeout-minutes"), (
+                        f"{self.rel}: job {name!r} delegates its bound to "
+                        f"{callee}, whose job {called_name!r} has no timeout"
+                    )
+                continue
             assert job.get("timeout-minutes"), (
                 f"{self.rel}: job {name!r} has no 'timeout-minutes'"
             )
