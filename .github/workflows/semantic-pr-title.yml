@@ -27,7 +27,17 @@ concurrency:
 
 jobs:
   lint-pr-title:
-    if: github.actor != 'dependabot[bot]'
+    # Keyed on the login that opened the pull request, not on github.actor.
+    # Synacktiv documents a force-push sequence that yields
+    # github.actor == 'dependabot[bot]' on an attacker-controlled pull
+    # request (https://www.synacktiv.com/en/publications/github-actions-exploitation-dependabot),
+    # and this condition is the only thing between that attacker and the
+    # title lint. The job then skips, so the check that gates merges never runs.
+    #
+    # github.event.pull_request.user.login is the opening actor, which no
+    # force-push can rewrite, so the exemption finally applies to the thing it
+    # was meant to apply to.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     uses: $/.github/workflows/reusable-semantic-pr-title.yml
     permissions:
       contents: read
