@@ -1,3 +1,5 @@
+# Release component: reusable-workflow-tests
+# Pin from another repo as reusable-workflow-tests.yml@reusable-workflow-tests/v0.
 name: Workflow Contract Tests
 
 on:

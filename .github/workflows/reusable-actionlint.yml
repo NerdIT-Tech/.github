@@ -1,3 +1,5 @@
+# Release component: reusable-actionlint
+# Pin from another repo as reusable-actionlint.yml@reusable-actionlint/v0.
 name: Actionlint
 
 on:
