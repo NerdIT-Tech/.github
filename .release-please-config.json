@@ -176,11 +176,6 @@
       "initial-version": "0.1.0",
       "separate-pull-requests": false
     },
-    ".github/workflows/reusable-lint-pr-title.yml": {
-      "component": "reusable-lint-pr-title",
-      "initial-version": "0.1.0",
-      "separate-pull-requests": false
-    },
     ".github/workflows/reusable-scorecard.yml": {
       "component": "reusable-scorecard",
       "initial-version": "0.1.0",
