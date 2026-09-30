@@ -19,6 +19,10 @@ on:
         description: "Additional go test flags (e.g. '-tags e2e')"
         type: string
         default: "-tags e2e"
+      failure-summary-title:
+        description: "Heading to print in the step summary when tests fail"
+        type: string
+        default: "### E2E Nightly failed"
     secrets:
       instance:
         description: "ServiceNow instance to run the E2E suite against"
@@ -68,9 +72,13 @@ jobs:
 
       - name: Summarize failures
         if: failure()
+        env:
+          # Via the environment, not interpolated into the script: `${{ }}` in
+          # a `run:` block is a shell injection (audit rec #1).
+          SUMMARY_TITLE: ${{ inputs.failure-summary-title }}
         run: |
           {
-            echo "### E2E Nightly failed"
+            echo "$SUMMARY_TITLE"
             echo ""
             echo '```'
             grep -E "^(=== RUN|--- FAIL|FAIL|ok )" e2e-output.txt | tail -50 || true
