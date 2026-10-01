@@ -59,7 +59,7 @@ jobs:
     # reusable workflow, so the bound is each callee's own job timeout
     # (10 minutes for both). A caller that needs a tighter overall bound gets
     # it by calling the two workflows directly instead of through this gate.
-    uses: $/.github/workflows/reusable-vale-lint.yml
+    uses: $/.github/workflows/reusable-vale-lint/reusable-vale-lint.yml
     permissions:
       contents: read  # checkout and Vale lint
     with:
@@ -72,7 +72,7 @@ jobs:
   snippets:
     name: Check Doc Snippets
     if: ${{ inputs.check-snippets }}
-    uses: $/.github/workflows/reusable-check-snippets.yml
+    uses: $/.github/workflows/reusable-check-snippets/reusable-check-snippets.yml
     permissions:
       contents: read
     with:

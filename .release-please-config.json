@@ -127,85 +127,85 @@
       "component": "vet-go-snippets",
       "initial-version": "0.1.0"
     },
-    ".github/workflows/reusable-actionlint.yml": {
+    ".github/workflows/reusable-actionlint": {
       "component": "reusable-actionlint",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-build-go.yml": {
+    ".github/workflows/reusable-build-go": {
       "component": "reusable-build-go",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-check-go-deps.yml": {
+    ".github/workflows/reusable-check-go-deps": {
       "component": "reusable-check-go-deps",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-check-license.yml": {
+    ".github/workflows/reusable-check-license": {
       "component": "reusable-check-license",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-check-snippets.yml": {
+    ".github/workflows/reusable-check-snippets": {
       "component": "reusable-check-snippets",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-codeql.yml": {
+    ".github/workflows/reusable-codeql": {
       "component": "reusable-codeql",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-docs-build.yml": {
+    ".github/workflows/reusable-docs-build": {
       "component": "reusable-docs-build",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-docs-gate.yml": {
+    ".github/workflows/reusable-docs-gate": {
       "component": "reusable-docs-gate",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-e2e-go.yml": {
+    ".github/workflows/reusable-e2e-go": {
       "component": "reusable-e2e-go",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-govulncheck.yml": {
+    ".github/workflows/reusable-govulncheck": {
       "component": "reusable-govulncheck",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-lint-go.yml": {
+    ".github/workflows/reusable-lint-go": {
       "component": "reusable-lint-go",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-scorecard.yml": {
+    ".github/workflows/reusable-scorecard": {
       "component": "reusable-scorecard",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-semantic-pr-title.yml": {
+    ".github/workflows/reusable-semantic-pr-title": {
       "component": "reusable-semantic-pr-title",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-stale-issues.yml": {
+    ".github/workflows/reusable-stale-issues": {
       "component": "reusable-stale-issues",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-sync-issue-labels.yml": {
+    ".github/workflows/reusable-sync-issue-labels": {
       "component": "reusable-sync-issue-labels",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-test-go.yml": {
+    ".github/workflows/reusable-test-go": {
       "component": "reusable-test-go",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-vale-lint.yml": {
+    ".github/workflows/reusable-vale-lint": {
       "component": "reusable-vale-lint",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-workflow-tests.yml": {
+    ".github/workflows/reusable-workflow-tests": {
       "component": "reusable-workflow-tests",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-yaml-lint.yml": {
+    ".github/workflows/reusable-yaml-lint": {
       "component": "reusable-yaml-lint",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     },
-    ".github/workflows/reusable-zizmor.yml": {
+    ".github/workflows/reusable-zizmor": {
       "component": "reusable-zizmor",
-      "initial-version": "0.1.0"
+      "initial-version": "1.0.0"
     }
   }
 }

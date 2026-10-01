@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   scorecard:
-    uses: $/.github/workflows/reusable-scorecard.yml
+    uses: $/.github/workflows/reusable-scorecard/reusable-scorecard.yml
     permissions:
       contents: read  # checkout
       security-events: write  # SARIF upload to code scanning

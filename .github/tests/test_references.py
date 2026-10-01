@@ -17,6 +17,7 @@ import pytest
 
 from conftest import (
     REPO_ROOT,
+    WORKFLOWS_DIR,
     classify_reference,
     composite_actions,
     declared_permissions,
@@ -162,7 +163,9 @@ class TestCallerGrantsCalleePermissions:
         )
 
 
-README_TABLE = re.compile(r"^\|\s*`(?P<name>[\w.-]+)`\s*\|\s*(?P<perms>.+?)\s*\|$")
+README_TABLE = re.compile(
+    r"^\|\s*`(?P<name>[\w./-]+)`\s*\|\s*(?P<perms>.+?)\s*\|$"
+)
 
 
 def _documented_caller_grants():
@@ -193,7 +196,7 @@ def test_documented_caller_grants_match_the_workflow(name, scopes):
     A table row that has drifted from the workflow is worse than no table,
     because a caller reads it and grants the wrong thing.
     """
-    path = REPO_ROOT / ".github" / "workflows" / name
+    path = WORKFLOWS_DIR / name
     assert path.is_file(), f"README documents {name}, which does not exist"
 
     doc = load_yaml(path) or {}
@@ -217,7 +220,7 @@ def test_every_reusable_needing_a_grant_is_documented():
             declared |= job_scopes
         if not declared:
             continue
-        assert path.name in DOCUMENTED, (
+        assert path.relative_to(WORKFLOWS_DIR).as_posix() in DOCUMENTED, (
             f"{relative(path)} needs caller permissions {sorted(declared)} but is "
             "absent from the 'Caller must grant' table in workflows/README.md"
         )

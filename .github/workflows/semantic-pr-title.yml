@@ -38,7 +38,7 @@ jobs:
     # force-push can rewrite, so the exemption finally applies to the thing it
     # was meant to apply to.
     if: github.event.pull_request.user.login != 'dependabot[bot]'
-    uses: $/.github/workflows/reusable-semantic-pr-title.yml
+    uses: $/.github/workflows/reusable-semantic-pr-title/reusable-semantic-pr-title.yml
     permissions:
       contents: read
       pull-requests: write  # sticky PR title lint comment: create on failure, delete on success

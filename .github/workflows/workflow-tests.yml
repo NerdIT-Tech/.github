@@ -29,6 +29,6 @@ concurrency:
 
 jobs:
   pytest:
-    uses: $/.github/workflows/reusable-workflow-tests.yml
+    uses: $/.github/workflows/reusable-workflow-tests/reusable-workflow-tests.yml
     permissions:
       contents: read  # the reusable's only need: checkout the workflows it asserts on

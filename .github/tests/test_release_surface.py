@@ -54,9 +54,16 @@ def releasable_units() -> list[tuple[str, str]]:
     `reusable-*.yml` rather than a `workflow_call` check: the glob is what the
     publishing decision is keyed on, so a workflow that accidentally loses its
     trigger still fails here instead of silently keeping a stale entry.
+
+    The key is the component *directory*, not the workflow file. release-please
+    attributes commits with `file.indexOf(packagePath + "/") === 0`, so a
+    package path naming a file can never match a commit and the component is
+    never released -- which is why all 16 workflow components that predate this
+    layout shipped without a CHANGELOG.md.
     """
     units = [
-        (relative(path), relative(path)) for path in WORKFLOWS_DIR.glob("reusable-*.yml")
+        (relative(path), relative(path.parent))
+        for path in WORKFLOWS_DIR.rglob("reusable-*.yml")
     ]
     units += [(relative(path), relative(path.parent)) for path in composite_actions()]
     return sorted(units)
@@ -70,7 +77,8 @@ def component_of(package_key: str) -> str:
 
     Both key shapes end in the component: an action directory is
     `.github/actions/<component>` and a workflow is
-    `.github/workflows/<component>.yml`.
+    `.github/workflows/<component>`. Neither is a file path -- see
+    `releasable_units` for why that matters.
     """
     name = package_key.rsplit("/", 1)[-1]
     return name[:-4] if name.endswith(".yml") else name
@@ -174,8 +182,8 @@ def test_every_releasable_unit_is_registered(where, key):
 
 def test_repository_actually_has_manifest_components():
     """Guard the guard for the manifest side of the same invariant."""
-    assert len(COMPONENTS) >= 30, (
-        f"expected at least 30 released components, found {len(COMPONENTS)} -- "
+    assert len(COMPONENTS) >= 20, (
+        f"expected at least 20 released components, found {len(COMPONENTS)} -- "
         f"did {MANIFEST_FILE} stop parsing?"
     )
 
@@ -195,14 +203,12 @@ class TestFloatingMajorTag:
     absent or, worse, pointing at an old commit that reads as up to date.
 
     Tradeoff: `git tag -l` is a local view, and this suite is run by
-    `reusable-workflow-tests.yml`, whose checkout uses the default
-    `fetch-depth: 1`. A shallow clone carries no tag history, so asserting
-    here would fail in CI on every component at once -- one false failure per
-    component, which trains people to ignore the gate. Skipping when the clone
-    is shallow, or has no tags at all, keeps the check meaningful locally, where
-    the tags are present, and silent rather than wrong in CI. The cost is that
-    CI does not enforce this invariant; `fetch-depth: 0` on that workflow's
-    checkout is the change to make when someone wants the coverage there.
+    `reusable-workflow-tests/reusable-workflow-tests.yml`. Its checkout sets
+    `fetch-depth: 0` so CI sees the same tag list a developer does -- without
+    that, a shallow clone carries no tag history and this gate would fail on
+    every component at once, one false failure per component, which trains
+    people to ignore it. The skip below is a backstop for a clone that still
+    cannot answer, not the normal CI path.
     """
 
     @pytest.fixture(autouse=True)

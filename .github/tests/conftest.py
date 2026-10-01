@@ -156,8 +156,15 @@ def action_paths() -> list[str]:
 
 
 def workflow_paths() -> list[Path]:
-    """Every workflow file."""
-    return sorted(WORKFLOWS_DIR.glob("*.yml"))
+    """Every workflow file, at the top level or inside a component directory.
+
+    Reusable workflows live at `reusable-<purpose>/reusable-<purpose>.yml` so
+    release-please can attribute commits to them -- its `CommitSplit` matches
+    package paths by directory prefix, so a package path pointing at a file
+    never matches any commit and the component can never be released. A
+    non-recursive glob here would silently drop every one of them.
+    """
+    return sorted(WORKFLOWS_DIR.rglob("*.yml"))
 
 
 def reusable_workflows() -> list[Path]:

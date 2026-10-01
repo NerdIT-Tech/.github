@@ -18,21 +18,5 @@
   ".github/actions/go-test": "0.1.0",
   ".github/actions/install-tparse": "0.1.0",
   ".github/actions/setup-go-env": "0.1.0",
-  ".github/actions/vet-go-snippets": "0.1.0",
-  ".github/workflows/reusable-build-go.yml": "0.1.1",
-  ".github/workflows/reusable-check-go-deps.yml": "0.1.1",
-  ".github/workflows/reusable-check-license.yml": "0.1.1",
-  ".github/workflows/reusable-check-snippets.yml": "0.1.1",
-  ".github/workflows/reusable-codeql.yml": "0.1.0",
-  ".github/workflows/reusable-docs-build.yml": "0.1.1",
-  ".github/workflows/reusable-docs-gate.yml": "0.1.1",
-  ".github/workflows/reusable-e2e-go.yml": "0.1.1",
-  ".github/workflows/reusable-govulncheck.yml": "0.1.0",
-  ".github/workflows/reusable-lint-go.yml": "0.1.1",
-  ".github/workflows/reusable-scorecard.yml": "0.1.0",
-  ".github/workflows/reusable-stale-issues.yml": "0.1.0",
-  ".github/workflows/reusable-sync-issue-labels.yml": "0.1.0",
-  ".github/workflows/reusable-test-go.yml": "0.1.1",
-  ".github/workflows/reusable-vale-lint.yml": "0.1.0",
-  ".github/workflows/reusable-zizmor.yml": "0.1.0"
+  ".github/actions/vet-go-snippets": "0.1.0"
 }

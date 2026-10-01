@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   lint-yaml:
-    uses: $/.github/workflows/reusable-yaml-lint.yml
+    uses: $/.github/workflows/reusable-yaml-lint/reusable-yaml-lint.yml
     permissions:
       contents: read  # the reusable's only need: checkout the YAML it lints
     with:
