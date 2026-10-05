@@ -48,7 +48,7 @@ jobs:
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
-          model: opencode/big-pickle
+          model: opencode/nemotron-3-ultra-free
           use_github_token: true
           prompt: |
             You are performing a code review of this pull request. The PR
