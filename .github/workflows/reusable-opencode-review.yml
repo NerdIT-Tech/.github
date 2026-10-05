@@ -48,7 +48,7 @@ on:
         default: 15
     secrets:
       OPENCODE_API_KEY:
-        description: "Optional opencode Zen API key. Omit it to use the anonymous free tier; the config step then drops the provider override."
+        description: "Optional opencode Zen API key. When set, it is left in the step env for the CLI to pick up."
         required: false
 
 # permissions: {} at workflow level; every grant is made per job and annotated.
@@ -96,13 +96,6 @@ jobs:
             "mcp": {},
             "plugin": [],
             "instructions": [],
-            "provider": {
-              "opencode": {
-                "options": {
-                  "apiKey": "__OPENCODE_API_KEY__"
-                }
-              }
-            },
             "permission": {
               "*": "deny",
               "read": {
@@ -121,15 +114,6 @@ jobs:
             }
           }
           JSON
-          if [ -n "${OPENCODE_API_KEY:-}" ]; then
-            jq '.provider.opencode.options.apiKey = $k' --arg k "${OPENCODE_API_KEY}" opencode.json > opencode.json.tmp
-            mv opencode.json.tmp opencode.json
-          else
-            # No API key configured: drop the provider override so the binary
-            # falls back to its anonymous free tier (options.apiKey="public").
-            jq 'del(.provider)' opencode.json > opencode.json.tmp
-            mv opencode.json.tmp opencode.json
-          fi
           mkdir -p .opencode/agents
           cat >.opencode/agents/pr-review.md <<'MD'
           ---

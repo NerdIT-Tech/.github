@@ -57,13 +57,6 @@ jobs:
             "mcp": {},
             "plugin": [],
             "instructions": [],
-            "provider": {
-              "opencode": {
-                "options": {
-                  "apiKey": "__OPENCODE_API_KEY__"
-                }
-              }
-            },
             "permission": {
               "*": "deny",
               "read": {
@@ -82,15 +75,6 @@ jobs:
             }
           }
           JSON
-          if [ -n "${OPENCODE_API_KEY:-}" ]; then
-            jq '.provider.opencode.options.apiKey = $k' --arg k "${OPENCODE_API_KEY}" opencode.json > opencode.json.tmp
-            mv opencode.json.tmp opencode.json
-          else
-            # No API key configured: drop the provider override so the binary
-            # falls back to its anonymous free tier (options.apiKey="public").
-            jq 'del(.provider)' opencode.json > opencode.json.tmp
-            mv opencode.json.tmp opencode.json
-          fi
           mkdir -p .opencode/agents
           cat >.opencode/agents/pr-review.md <<'MD'
           ---
@@ -163,7 +147,7 @@ jobs:
           # OpenCode App OIDC exchange. This is what keeps the review token
           # limited to this repo's pull-request scope and unavailable to forks.
           use_github_token: true
-          share: true
+          share: false
           # No `review_mode` input exists on the released action; inline
           # comments are driven through a custom PROMPT that instructs opencode
           # to POST per-line PR review comments via the GitHub API and to end
