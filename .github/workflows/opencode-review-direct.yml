@@ -73,29 +73,6 @@ jobs:
           mode: primary
           temperature: 0.1
           steps: 12
-          permission:
-            "*": deny
-            bash: deny
-            edit: deny
-            write: deny
-            task: deny
-            webfetch: deny
-            websearch: deny
-            lsp: deny
-            skill: deny
-            question: deny
-            external_directory: deny
-            read:
-              "*": allow
-              "*.env": deny
-              "*.env.*": deny
-              "**/*.pem": deny
-              "**/*.key": deny
-              "**/id_rsa*": deny
-              "**/.git/**": deny
-            glob: allow
-            grep: allow
-            list: allow
           ---
           You review pull requests. You never modify files, run commands, fetch
           URLs, or delegate to other agents. You have no authority to do so and
