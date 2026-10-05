@@ -228,7 +228,7 @@ jobs:
             }
             core.info(`Superseded reviews dismissed: ${stale.length}.`);
       - name: Run opencode
-        uses: anomalyco/opencode/github@51ef4be1d3c122f18fefb510dca8d778571f4f18  # v1.18.33
+        uses: anomalyco/opencode/github@0ff64486494c3134c46df6ce0e51eda4a64e349f  # v1.18.33
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
