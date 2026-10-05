@@ -43,6 +43,24 @@ jobs:
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
 
+      - name: Write opencode.json like the reusable workflow does
+        shell: bash
+        run: |
+          cat >opencode.json <<'JSON'
+          {
+            "$schema": "https://opencode.ai/config.json",
+            "default_agent": "pr-review",
+            "share": "disabled",
+            "autoupdate": false,
+            "snapshot": false,
+            "lsp": false,
+            "formatter": false,
+            "mcp": {},
+            "plugin": [],
+            "instructions": []
+          }
+          JSON
+
       - name: Run opencode review
         uses: anomalyco/opencode/github@4b7e19e315cca414121ba1d61523fef74bb3ae8b # v1.18.27
         env:
