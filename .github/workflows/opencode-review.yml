@@ -38,15 +38,17 @@ jobs:
           persist-credentials: false
       - name: Run pr-review agent
         uses: $/.github/actions/opencode-pr-review
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode/big-pickle
           share: "false"
-          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run architecture agent
         uses: $/.github/actions/opencode-architecture-review
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode/big-pickle
           share: "false"
-          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
