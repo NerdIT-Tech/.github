@@ -91,6 +91,14 @@
       "component": "check-go-deps",
       "initial-version": "0.1.0"
     },
+    ".github/actions/opencode-architecture-review": {
+      "component": "opencode-architecture-review",
+      "initial-version": "0.1.0"
+    },
+    ".github/actions/opencode-pr-review": {
+      "component": "opencode-pr-review",
+      "initial-version": "0.1.0"
+    },
     ".github/actions/check-secret": {
       "component": "check-secret",
       "initial-version": "0.1.0"
