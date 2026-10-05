@@ -44,7 +44,8 @@ runs:
         rm -f opencode.json opencode.jsonc AGENTS.md CLAUDE.md .cursorrules
         rm -rf .github/copilot-instructions.md
         mkdir -p .opencode/agents
-        cp -R "${{ github.action_path }}/config/." .
+        cp "${{ github.action_path }}/opencode.json" .
+        cp "${{ github.action_path }}/agents/"*.md .opencode/agents/
     - name: Run opencode review
       uses: anomalyco/opencode/github@4b7e19e315cca414121ba1d61523fef74bb3ae8b # v1.18.27
       env:
