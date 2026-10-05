@@ -14,13 +14,13 @@ inputs:
           (default: docs/adrs/). For each changed file, reason about which ADRs apply
           via their applies_to globs, then check the diff against the MUST / MUST NOT /
           SHOULD rules.
-          
+
           1. Misalignment: where the change violates an existing accepted ADR. Cite the
              ADR id, file path, line, and violated rule.
           2. Missing records: where the change makes a decision existing ADRs do not
              cover. Describe the decision and propose the R-<AREA>-<NNN> id and
              applies_to globs a matching ADR should use.
-          
+
           Rank findings by severity. If the change aligns with all applicable ADRs and
           introduces no unrecorded decision, say so in one line.
 
@@ -32,6 +32,14 @@ inputs:
     description: "Use the repo-scoped GITHUB_TOKEN instead of the OpenCode App OIDC exchange."
     required: false
     default: "true"
+  opencode-api-key:
+    description: "OpenCode Zen API key passed to the CLI as OPENCODE_API_KEY."
+    required: false
+    default: ""
+  github-token:
+    description: "Repo-scoped GITHUB_TOKEN passed as GITHUB_TOKEN."
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -49,8 +57,8 @@ runs:
     - name: Run opencode review
       uses: anomalyco/opencode/github@4b7e19e315cca414121ba1d61523fef74bb3ae8b # v1.18.27
       env:
-        OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPENCODE_API_KEY: ${{ inputs.opencode-api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
         agent: architecture
         model: ${{ inputs.model }}

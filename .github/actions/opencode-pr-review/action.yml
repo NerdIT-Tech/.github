@@ -59,6 +59,14 @@ inputs:
     description: "Use the repo-scoped GITHUB_TOKEN instead of the OpenCode App OIDC exchange."
     required: false
     default: "true"
+  opencode-api-key:
+    description: "OpenCode Zen API key passed to the CLI as OPENCODE_API_KEY."
+    required: false
+    default: ""
+  github-token:
+    description: "Repo-scoped GITHUB_TOKEN passed as GITHUB_TOKEN."
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -76,8 +84,8 @@ runs:
     - name: Run opencode review
       uses: anomalyco/opencode/github@4b7e19e315cca414121ba1d61523fef74bb3ae8b # v1.18.27
       env:
-        OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPENCODE_API_KEY: ${{ inputs.opencode-api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
         agent: pr-review
         model: ${{ inputs.model }}

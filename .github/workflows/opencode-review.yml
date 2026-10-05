@@ -41,8 +41,12 @@ jobs:
         with:
           model: opencode/big-pickle
           share: "false"
+          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run architecture agent
         uses: $/.github/actions/opencode-architecture-review
         with:
           model: opencode/big-pickle
           share: "false"
+          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
