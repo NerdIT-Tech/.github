@@ -68,6 +68,7 @@ jobs:
         with:
           model: opencode/nemotron-3-ultra-free
           use_github_token: true
+          share: false
           prompt: |
             You are performing a code review of this pull request. The PR
             number, head commit, changed files, and diff are available in this
