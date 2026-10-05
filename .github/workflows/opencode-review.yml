@@ -39,7 +39,7 @@ jobs:
       - name: Run pr-review agent
         uses: $/.github/actions/opencode-pr-review
         env:
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}  # zizmor: ignore[secrets-outside-env] -- proxy secret into a composite `env:` input; job is same-repo-only with read-only token
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode/big-pickle
@@ -47,7 +47,7 @@ jobs:
       - name: Run architecture agent
         uses: $/.github/actions/opencode-architecture-review
         env:
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}  # zizmor: ignore[secrets-outside-env] -- proxy secret into a composite `env:` input; job is same-repo-only with read-only token
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode/big-pickle
