@@ -245,6 +245,7 @@ jobs:
           # OpenCode App OIDC exchange. This is what keeps the review token
           # limited to this repo's pull-request scope and unavailable to forks.
           use_github_token: true
+          share: ${{ inputs.share }}
           # No `review_mode` input exists on the released action; inline
           # comments are driven through a custom PROMPT that instructs opencode
           # to POST per-line PR review comments via the GitHub API and to end
