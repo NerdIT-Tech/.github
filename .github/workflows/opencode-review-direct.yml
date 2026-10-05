@@ -49,7 +49,6 @@ jobs:
           cat >opencode.json <<'JSON'
           {
             "$schema": "https://opencode.ai/config.json",
-            "default_agent": "pr-review",
             "share": "disabled",
             "autoupdate": false,
             "snapshot": false,
