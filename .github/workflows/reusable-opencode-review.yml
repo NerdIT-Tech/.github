@@ -74,14 +74,17 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Run opencode
-        # Vendored composite next to the other repo composites in
-        # .github/actions/. Swap opencode-pr-review for
-        # $/.github/actions/opencode-architecture-review.
+      - name: Run pr-review agent
         uses: $/.github/actions/opencode-pr-review
         with:
           model: ${{ inputs.model }}
           prompt: ${{ inputs.prompt }}
+          share: ${{ inputs.share }}
+          use-github-token: ${{ inputs.use-github-token }}
+      - name: Run architecture agent
+        uses: $/.github/actions/opencode-architecture-review
+        with:
+          model: ${{ inputs.model }}
           share: ${{ inputs.share }}
           use-github-token: ${{ inputs.use-github-token }}
       - name: Dismiss superseded opencode reviews

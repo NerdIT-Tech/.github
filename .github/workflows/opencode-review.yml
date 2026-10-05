@@ -36,11 +36,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Write the review agent configuration and run opencode
-        # Composite lives next to the other repo composites in
-        # .github/actions/. Swap opencode-pr-review for
-        # $/.github/actions/opencode-architecture-review.
+      - name: Run pr-review agent
         uses: $/.github/actions/opencode-pr-review
+        with:
+          model: opencode/big-pickle
+          share: "false"
+      - name: Run architecture agent
+        uses: $/.github/actions/opencode-architecture-review
         with:
           model: opencode/big-pickle
           share: "false"
