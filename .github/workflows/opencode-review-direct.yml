@@ -23,31 +23,7 @@ jobs:
     # Temporary clone of michaeldcanady/servicenow-sdk-go's opencode-review.yml
     # to test whether the direct-action + OPENCODE_API_KEY path works, unlike
     # the reusable-workflow anonymous free-tier path.
-    if: |
-      (
-        github.event_name == 'pull_request' &&
-        (
-          github.event.pull_request.author_association == 'OWNER' ||
-          github.event.pull_request.author_association == 'MEMBER' ||
-          github.event.pull_request.author_association == 'COLLABORATOR'
-        ) &&
-        !contains(github.event.pull_request.body, '/no-bot-review')
-      ) ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request != null &&
-        (
-          contains(github.event.comment.body, ' /oc review') ||
-          startsWith(github.event.comment.body, '/oc review') ||
-          contains(github.event.comment.body, ' /opencode review') ||
-          startsWith(github.event.comment.body, '/opencode review')
-        ) &&
-        (
-          github.event.comment.author_association == 'OWNER' ||
-          github.event.comment.author_association == 'MEMBER' ||
-          github.event.comment.author_association == 'COLLABORATOR'
-        )
-      )
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
