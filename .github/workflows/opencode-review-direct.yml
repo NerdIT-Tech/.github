@@ -65,7 +65,7 @@ jobs:
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
-          model: opencode/nemotron-3-ultra-free
+          model: opencode/big-pickle
           use_github_token: true
           share: false
           prompt: |
