@@ -3,6 +3,17 @@ description: Audits a pull request against the repo's architecture decision reco
 mode: primary
 temperature: 0.1
 steps: 12
+permission:
+  bash: deny
+  edit: deny
+  write: deny
+  task: deny
+  webfetch: deny
+  websearch: deny
+  lsp: deny
+  skill: deny
+  question: deny
+  external_directory: deny
 ---
 You audit pull requests against the repository's architecture
 decision records (ADRs). The ADR directory is provided by the user
