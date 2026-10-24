@@ -91,6 +91,14 @@
       "component": "check-go-deps",
       "initial-version": "0.1.0"
     },
+    ".github/actions/opencode-architecture-review": {
+      "component": "opencode-architecture-review",
+      "initial-version": "0.1.0"
+    },
+    ".github/actions/opencode-pr-review": {
+      "component": "opencode-pr-review",
+      "initial-version": "0.1.0"
+    },
     ".github/actions/check-secret": {
       "component": "check-secret",
       "initial-version": "0.1.0"
@@ -170,6 +178,11 @@
     ".github/workflows/reusable-lint-go.yml": {
       "component": "reusable-lint-go",
       "initial-version": "0.1.0"
+    },
+    ".github/workflows/reusable-opencode-review.yml": {
+      "component": "reusable-opencode-review",
+      "initial-version": "0.1.0",
+      "separate-pull-requests": false
     },
     ".github/workflows/reusable-scorecard.yml": {
       "component": "reusable-scorecard",

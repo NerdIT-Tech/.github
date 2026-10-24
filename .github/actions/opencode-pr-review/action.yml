@@ -1,0 +1,86 @@
+name: opencode PR review
+description: Runs the custom pr-review agent through the official opencode GitHub Action.
+
+inputs:
+  model:
+    description: "Model to run the review with, in provider/model form."
+    required: true
+  prompt:
+    description: "Review/audit prompt. Defaults to the built-in PR review prompt."
+    required: false
+    default: |
+          You are performing a code review of this pull request. The PR
+          number, head commit, changed files, and diff are available in this
+          session's context. Review the actual changed lines, read surrounding
+          context for accuracy, and focus on correctness, bugs, security,
+          and maintainability.
+          Your ONLY job is to post review feedback. You must NOT modify any
+          files, create branches, open pull requests, commit, or push code.
+          You may not request any additional permissions or run destructive
+          commands. Reviewing and posting comments is all you may do.
+          For every issue that genuinely needs attention (a real bug, a
+          security problem, or a defect that will cause confusion later),
+          post an INLINE review comment on the exact changed line using the
+          GitHub API. Use the `gh` CLI:
+          ```
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/{owner}/{repo}/pulls/{pr_number}/comments \
+            -f 'body=<summary of the issue>' \
+            -f 'commit_id=<head commit SHA>' \
+            -f 'path=<path-to-file>' \
+            -F 'line=<exact line number in the head version>' \
+            -f 'side=RIGHT'
+          ```
+          Substitute {owner}/{repo} with the GitHub repository and {pr_number}
+          with the pull request number. Put the comment on the exact line
+          that needs the change and specify each finding precisely. If you
+          have a concrete suggested fix, include it in a suggestion code
+          block, but do not invent one when a plain explanation is clearer.
+          Then post ONE concise overall review summary as your final answer:
+          a short verdict (e.g. "Looks good", "Requesting changes", or
+          "Approving with minor nits") followed by a small number of bullet
+          points for the most important findings. This summary is what gets
+          posted as the top-level review comment, so keep it tight and
+          actionable — do not paste long diffs or repeat every inline comment.
+          If you find no actionable findings, leave a short passing review
+          summary instead of inventing comments. Do not request cosmetic
+          churn (style nits, renames, formatting) unless it prevents
+          confusion or future defects. Do not nitpick code that is not
+          actually in violation.
+
+  share:
+    description: "Whether opencode may publish the session. Keep false for private or unreleased code."
+    required: false
+    default: "false"
+  use-github-token:
+    description: "Use the repo-scoped GITHUB_TOKEN instead of the OpenCode App OIDC exchange."
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Install the pr-review agent configuration
+      shell: bash
+      run: |
+        set -euo pipefail
+        rm -rf .opencode .claude .cursor
+        rm -f opencode.json opencode.jsonc AGENTS.md CLAUDE.md .cursorrules
+        rm -rf .github/copilot-instructions.md
+        mkdir -p .opencode/agents
+        cp "${{ github.action_path }}/opencode.json" .
+        cp "${{ github.action_path }}/agents/"*.md .opencode/agents/
+        # The agent must be read-only. Permission deny-maps break free-tier
+        # Zen validation (FreeTierError), so enforce with file permissions.
+        find . -path ./.git -prune -o -type d -exec chmod a-w {} + -o -type f -exec chmod a-w {} +
+    - name: Run opencode review
+      uses: anomalyco/opencode/github@4b7e19e315cca414121ba1d61523fef74bb3ae8b # v1.18.27
+      with:
+        agent: pr-review
+        model: ${{ inputs.model }}
+        use_github_token: ${{ inputs.use-github-token }}
+        share: ${{ inputs.share }}
+        prompt: ${{ inputs.prompt }}

@@ -1,0 +1,59 @@
+name: opencode Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+concurrency:
+  # One review per pull request at a time. A push sequence of five commits must
+  # cost one review, not five.
+  group: opencode-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  review:
+    name: opencode review
+    # Fork pull requests get a read-only GITHUB_TOKEN and no repository secrets,
+    # so the job cannot run there. github.repository is the *caller's* repo, so
+    # this compares the PR head repo against the repo the workflow is running in.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read  # actions/checkout
+      pull-requests: write  # post the new review; dismiss superseded ones
+    steps:
+      - name: Checkout pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set git identity
+        shell: bash
+        run: |
+          git config user.name "opencode-review"
+          git config user.email "opencode-review@users.noreply.github.com"
+      - name: Run pr-review agent
+        uses: $/.github/actions/opencode-pr-review
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}  # zizmor: ignore[secrets-outside-env] -- proxy secret into a composite `env:` input; job is same-repo-only with read-only token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: opencode/big-pickle
+          share: "false"
+      - name: Run architecture agent
+        uses: $/.github/actions/opencode-architecture-review
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}  # zizmor: ignore[secrets-outside-env] -- proxy secret into a composite `env:` input; job is same-repo-only with read-only token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: opencode/big-pickle
+          share: "false"

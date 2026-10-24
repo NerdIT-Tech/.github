@@ -55,6 +55,7 @@ NerdIT-Tech repos, e.g. [`reusable-semantic-pr-title.yml`](reusable-semantic-pr-
   | `reusable-e2e-go.yml` | `contents: read` |
   | `reusable-govulncheck.yml` | `contents: read` |
   | `reusable-lint-go.yml` | `contents: read` |
+  | `reusable-opencode-review.yml` | `contents: read`, `pull-requests: write` |
   | `reusable-scorecard.yml` | `contents: read`, `security-events: write`, `id-token: write` |
   | `reusable-semantic-pr-title.yml` | `contents: read`, `pull-requests: write` |
   | `reusable-stale-issues.yml` | `issues: write` |

@@ -1,0 +1,143 @@
+name: opencode PR Review
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: "Model to run the review with, in provider/model form. Free Zen models work anonymously; opencode/big-pickle is NOT served upstream."
+        type: string
+        default: "opencode/nemotron-3-ultra-free"
+      agent:
+        description: "Name of the primary agent written into the workspace. Must match the agent file this workflow writes."
+        type: string
+        default: "pr-review"
+      prompt:
+        description: "Review instructions. The untrusted-data preamble is prepended by this workflow, not by the caller."
+        type: string
+        default: |
+          Review this pull request.
+          Focus, in priority order, on:
+          1. Correctness bugs and security defects introduced by this diff.
+          2. Missing or inadequate tests for changed behaviour.
+          3. Maintainability problems worth fixing now.
+          Report each finding with a file path, a line reference, and one sentence
+          of justification. Skip praise. If you find nothing, say so in one line.
+      share:
+        description: "Whether opencode may publish the session. Keep false for private or unreleased code."
+        type: boolean
+        default: false
+      use-github-token:
+        description: "Use GITHUB_TOKEN instead of an OIDC exchange with the opencode-agent GitHub App."
+        type: boolean
+        default: true
+      isolate-config:
+        description: "Delete pull-request-supplied opencode config and instruction files before writing our own."
+        type: boolean
+        default: true
+      review-author-login:
+        description: "Bot login whose earlier reviews are dismissed as superseded."
+        type: string
+        default: "github-actions[bot]"
+      dismiss-message:
+        description: "Dismissal message recorded against superseded reviews."
+        type: string
+        default: "Superseded by a newer opencode review of this pull request."
+      timeout-minutes:
+        description: "Wall-clock budget for the job."
+        type: number
+        default: 15
+    secrets:
+      OPENCODE_API_KEY:
+        description: "Optional opencode Zen API key. When set, it is left in the step env for the CLI to pick up."
+        required: false
+
+# permissions: {} at workflow level; every grant is made per job and annotated.
+# Matches reusable-zizmor.yml:27-33 and the rest of the fleet.
+permissions: {}
+
+jobs:
+  review:
+    name: opencode review
+    # Fork pull requests get a read-only GITHUB_TOKEN and no repository secrets,
+    # so the job cannot run there. github.repository is the *caller's* repo, so
+    # this compares the PR head repo against the repo the workflow is running in.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read  # actions/checkout
+      pull-requests: write  # post the new review; dismiss superseded ones
+    steps:
+      - name: Checkout pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set git identity
+        shell: bash
+        run: |
+          git config user.name "opencode-review"
+          git config user.email "opencode-review@users.noreply.github.com"
+      - name: Run pr-review agent
+        uses: $/.github/actions/opencode-pr-review
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}  # zizmor: ignore[secrets-outside-env] -- proxy secret into a composite `env:` input; job is same-repo-only with read-only token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: ${{ inputs.model }}
+          prompt: ${{ inputs.prompt }}
+          share: ${{ inputs.share }}
+          use-github-token: ${{ inputs.use-github-token }}
+      - name: Run architecture agent
+        uses: $/.github/actions/opencode-architecture-review
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}  # zizmor: ignore[secrets-outside-env] -- proxy secret into a composite `env:` input; job is same-repo-only with read-only token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: ${{ inputs.model }}
+          share: ${{ inputs.share }}
+          use-github-token: ${{ inputs.use-github-token }}
+      - name: Dismiss superseded opencode reviews
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          REVIEW_AUTHOR_LOGIN: ${{ inputs.review-author-login }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DISMISS_MESSAGE: ${{ inputs.dismiss-message }}
+        with:
+          script: |
+            const headSha = process.env.HEAD_SHA;
+            if (!headSha) {
+              core.info("No pull_request payload; nothing to dismiss.");
+              return;
+            }
+            const pullNumber = context.payload.pull_request.number;
+            const { owner, repo } = context.repo;
+            const login = process.env.REVIEW_AUTHOR_LOGIN;
+            const { data: reviews } = await github.request(
+              "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews",
+              { owner, repo, pull_number: pullNumber, per_page: 100 }
+            );
+            const stale = reviews.filter(
+              (r) => r.user?.login === login && r.state !== "DISMISSED" && r.commit_id !== headSha
+            );
+            for (const review of stale) {
+              try {
+                await github.request(
+                  "PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals",
+                  {
+                    owner,
+                    repo,
+                    pull_number: pullNumber,
+                    review_id: review.id,
+                    message: process.env.DISMISS_MESSAGE,
+                    event: "DISMISS",
+                  }
+                );
+                core.info(`Dismissed superseded review ${review.id} (${review.commit_id}).`);
+              } catch (error) {
+                core.warning(`Could not dismiss review ${review.id}: ${error.status ?? error.message}. Grant the Actions app 'dismiss stale reviews' on the protected branch.`);
+              }
+            }
+            core.info(`Superseded reviews dismissed: ${stale.length}.`);
